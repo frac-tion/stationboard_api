@@ -11,8 +11,12 @@ for time and date add itdDateDayMonthYear=10.08.2015&itdTime=1125
 http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_REQUEST?language=de&deleteAssignedStops_dm=1&trITMOTvalue100=7&useProxFootSearch=0&itdLPxx_today=10&mode=direct&lsShowTrainsExplicit=0&type_dm=any&name_dm=66002294&includedMeans=checkbox&inclMOT_ZUG=1&inclMOT_BUS=1&inclMOT_8=1&inclMOT_9=1&locationServerActive=1&convertStopsPTKernel2LocationServer=1&convertAddressesITKernel2LocationServer=1&convertCoord2LocationServer=1&convertCrossingsITKernel2LocationServer=1&convertPOIsITKernel2LocationServer=1&stateless=1&itOptionsActive=1&ptOptionsActive=1&itdLPxx_depOnly=1&maxAssignedStops=1&hideBannerInfo=1&execInst=normal&limit=15&useAllStops=1&outputFormat=JSON
 
 #### Our API
+Look at client.js for a working example
+		var WebSocket = require('ws');
+		var ws = new WebSocket('ws://host:port');
+
 Request for finding a busstops id and list of busstops
-https://domain.com/api/busstops?search=SearchQuery
+		ws.send(JSON.stringify({call:"busstopRequest", query:"lana"}));
 
 Request for statianboard
-https://domain.com/api/stationboard?search=SearchQuery
+		ws.send(JSON.stringify({call:"stationboardRequest", query:"66002351"}));
