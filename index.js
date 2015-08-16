@@ -1,22 +1,37 @@
-var request = require('request');
-var moment = require('moment');
-var sortBy = require("sort-array");
-var WebSocketServer = require('ws').Server,
-		wss = new WebSocketServer({ port: 8000 });
-var Log = require('log'), log = new Log('info');
-/*
- * log.debug('preparing email');
- * log.info('sending email');
- * log.error('failed to send email');
- */
+//config
+var port = 8000;
+var logLevel = 'info';
 
+//api calls
 var BUSSTOP_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_STOPFINDER_REQUEST?language=de&outputFormat=JSON&itdLPxx_usage=origin&useLocalityMainStop=true&doNotSearchForStops_sf=1&SpEncId=1&odvSugMacro=true&name_sf=';
 var STATIONBOARD_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_REQUEST?language=de&deleteAssignedStops_dm=1&trITMOTvalue100=7&useProxFootSearch=0&itdLPxx_today=10&mode=direct&lsShowTrainsExplicit=0&type_dm=any&includedMeans=checkbox&inclMOT_ZUG=1&inclMOT_BUS=1&inclMOT_8=1&inclMOT_9=1&locationServerActive=1&convertStopsPTKernel2LocationServer=1&convertAddressesITKernel2LocationServer=1&convertCoord2LocationServer=1&convertCrossingsITKernel2LocationServer=1&convertPOIsITKernel2LocationServer=1&stateless=1&itOptionsActive=1&ptOptionsActive=1&itdLPxx_depOnly=1&maxAssignedStops=1&hideBannerInfo=1&execInst=normal&limit=15&useAllStops=1&outputFormat=JSON&name_dm=';
 
-//busstopRequest("Lana post");
-stationboardRequest("66002351");
+/*
+ * Log level:
+ *
+ * 0 EMERGENCY system is unusable
+ * 1 ALERT action must be taken immediately
+ * 2 CRITICAL the system is in critical condition
+ * 3 ERROR error condition
+ * 4 WARNING warning condition
+ * 5 NOTICE a normal but significant condition
+ * 6 INFO a purely informational message
+ * 7 DEBUG messages to debug an application
+ */
+
+var Log = require('log');
+var request = require('request');
+var moment = require('moment');
+var sortBy = require("sort-array");
+var WebSocketServer = require('ws').Server;
+
+var log = new Log(logLevel);
+var wss = new WebSocketServer({ port: port });
+
+log.info("WebSocket listening on " + port);
 
 wss.on('connection', function connection(ws) {
+	log.info("New client connected");
 	ws.on('message', function incoming(message) {
 		log.info('received: %s', message);
 		try {
@@ -27,7 +42,7 @@ wss.on('connection', function connection(ws) {
 				else if (message.call == "stationboardRequest")
 					stationboardRequest(message.query, ws);
 				else
-					log.info("Unknow call");
+					log.info("Unknown call");
 			}
 			else
 				log.info("Missing argument");
@@ -54,13 +69,15 @@ function busstopRequest(query, ws) {
 						}
 					}
 				}
+				log.debug("Busstop List:", JSON.stringify(list));
 				if (ws)
 					ws.send(JSON.stringify({res: list, cb: "busstopResponse"}));
-
 			} catch (exc) {
 				log.error("JSON parse error:", exc);
 			}
 		}
+		else
+			log.error("HTTP error:", err);
 	});
 }
 
@@ -81,12 +98,15 @@ function stationboardRequest(query, ws) {
 				for (var i = 0; i < departureList.length; i++) {
 					list.push(parseStationboard(departureList[i]));
 				}
+				log.debug("Stationboard List:", JSON.stringify(list));
 				if (ws)
 					ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
 			} catch (exc) {
 				log.error("JSON parse error:", exc);
 			}
 		}
+		else
+			log.error("HTTP error:", err);
 	});
 }
 
