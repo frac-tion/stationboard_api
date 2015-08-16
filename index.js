@@ -1,10 +1,11 @@
 //config
 var port = 8000;
-var logLevel = 'info';
+var logLevel = 'debug';
 
 //api calls
-var BUSSTOP_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_STOPFINDER_REQUEST?language=de&outputFormat=JSON&itdLPxx_usage=origin&useLocalityMainStop=true&doNotSearchForStops_sf=1&SpEncId=1&odvSugMacro=true&name_sf=';
-var STATIONBOARD_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_REQUEST?language=de&deleteAssignedStops_dm=1&trITMOTvalue100=7&useProxFootSearch=0&itdLPxx_today=10&mode=direct&lsShowTrainsExplicit=0&type_dm=any&includedMeans=checkbox&inclMOT_ZUG=1&inclMOT_BUS=1&inclMOT_8=1&inclMOT_9=1&locationServerActive=1&convertStopsPTKernel2LocationServer=1&convertAddressesITKernel2LocationServer=1&convertCoord2LocationServer=1&convertCrossingsITKernel2LocationServer=1&convertPOIsITKernel2LocationServer=1&stateless=1&itOptionsActive=1&ptOptionsActive=1&itdLPxx_depOnly=1&maxAssignedStops=1&hideBannerInfo=1&execInst=normal&limit=15&useAllStops=1&outputFormat=JSON&name_dm=';
+//62.101.1.162 is efa.mobilitaetsagentur.bz.it
+var BUSSTOP_QUERY = 'http://62.101.1.162/apb/XSLT_STOPFINDER_REQUEST?language=de&outputFormat=JSON&itdLPxx_usage=origin&useLocalityMainStop=true&doNotSearchForStops_sf=1&SpEncId=1&odvSugMacro=true&name_sf=';
+var STATIONBOARD_QUERY = 'http://62.101.1.162/apb/XSLT_DM_REQUEST?language=de&deleteAssignedStops_dm=1&trITMOTvalue100=7&useProxFootSearch=0&itdLPxx_today=10&mode=direct&lsShowTrainsExplicit=0&type_dm=any&includedMeans=checkbox&inclMOT_ZUG=1&inclMOT_BUS=1&inclMOT_8=1&inclMOT_9=1&locationServerActive=1&convertStopsPTKernel2LocationServer=1&convertAddressesITKernel2LocationServer=1&convertCoord2LocationServer=1&convertCrossingsITKernel2LocationServer=1&convertPOIsITKernel2LocationServer=1&stateless=1&itOptionsActive=1&ptOptionsActive=1&itdLPxx_depOnly=1&maxAssignedStops=1&hideBannerInfo=1&execInst=normal&limit=15&useAllStops=1&outputFormat=JSON&name_dm=';
 
 /*
  * Log level:
@@ -54,18 +55,22 @@ wss.on('connection', function connection(ws) {
 
 function busstopRequest(query, ws) {
 	var list = [];
+	console.time("Request Time");
 	request(BUSSTOP_QUERY + query, function(err, res, body) {
+		console.timeEnd("Request Time");
 		if(!err) {
 			try {
 				var busstopList = JSON.parse(body).stopFinder.points;
-				if (busstopList.point !== undefined) {
-					list.push(parseBusstop(busstopList.point));
-				}
-				else {
-					sortBy(busstopList, "quality");
-					for (var i = 0; i < busstopList.length; i++) {
-						if (busstopList[i].anyType == "stop") {
-							list.push(parseBusstop(busstopList[i]));
+				if (busstopList !== null) {
+					if (busstopList.point !== undefined) {
+						list.push(parseBusstop(busstopList.point));
+					}
+					else {
+						sortBy(busstopList, "quality");
+						for (var i = 0; i < busstopList.length; i++) {
+							if (busstopList[i].anyType == "stop") {
+								list.push(parseBusstop(busstopList[i]));
+							}
 						}
 					}
 				}
