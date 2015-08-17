@@ -2,7 +2,7 @@
 API for stationboard webapp.
 
 ###Simple WebSocket API
-Look in testing for a working example.
+Look in [test](./test) for a working example or at [client.js](./client.js).
 ####Request for finding a busstops id and list of busstops
 ```javascript
 ws.send(JSON.stringify({call:"busstopRequest", query:"lana"}));
