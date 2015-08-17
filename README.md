@@ -1,5 +1,5 @@
 # stationboard_api
-API for stationboard webapp.
+API for stationboard webapp. Current [test server](http://sparber.net/stationboard/).
 
 ###Simple WebSocket API
 Look in [test](./test) for a working example or at [client.js](./client.js).
