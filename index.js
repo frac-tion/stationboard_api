@@ -1,6 +1,6 @@
 //config
 var port = 8000;
-var logLevel = 'debug';
+var logLevel = 'info';
 
 //api calls
 //62.101.1.162 is efa.mobilitaetsagentur.bz.it
@@ -56,11 +56,21 @@ wss.on('connection', function connection(ws) {
 function busstopRequest(query, ws) {
 	var list = [];
 	console.time("Request Time");
-	request(BUSSTOP_QUERY + query, function(err, res, body) {
+	request({url: BUSSTOP_QUERY + query,
+		json: true,
+		gzip: true,
+		headers: {
+			'Connection': 'keep-alive',
+			'Accept-Encoding': 'gzip, deflate'
+		}
+	},
+	function(err, res, body) {
 		console.timeEnd("Request Time");
 		if(!err) {
 			try {
-				var busstopList = JSON.parse(body).stopFinder.points;
+				//var busstopList = JSON.parse(body).stopFinder.points;
+				log.debug(body);
+				var busstopList = body.stopFinder.points;
 				if (busstopList !== null) {
 					if (busstopList.point !== undefined) {
 						list.push(parseBusstop(busstopList.point));
@@ -96,10 +106,19 @@ function parseBusstop(el) {
 
 function stationboardRequest(query, ws) {
 	var list = [];
-	request(STATIONBOARD_QUERY + query, function(err, res, body) {
+	request({url: STATIONBOARD_QUERY + query,
+		json: true,
+		gzip: true,
+		headers: {
+			'Connection': 'keep-alive',
+			'Accept-Encoding': 'gzip, deflate'
+		}
+	},
+	function(err, res, body) {
 		if(!err) {
 			try {
-				var departureList = JSON.parse(body).departureList;
+				//var departureList = JSON.parse(body).departureList;
+				var departureList = body.departureList;
 				for (var i = 0; i < departureList.length; i++) {
 					list.push(parseStationboard(departureList[i]));
 				}
