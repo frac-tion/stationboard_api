@@ -1,4 +1,5 @@
-var ws = new WebSocket('ws://192.168.12.136:8000');
+//var ws = new WebSocket('ws://192.168.12.136:8000');
+var ws = new WebSocket('ws://sparber.net:62249');
 
 ws.onopen = function (event) {
 	ws.send(JSON.stringify({call:"busstopRequest", query:"stazione"}));
