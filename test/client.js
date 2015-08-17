@@ -2,7 +2,12 @@
 var ws = new WebSocket('ws://sparber.net:62249');
 
 ws.onopen = function (event) {
-	ws.send(JSON.stringify({call:"busstopRequest", query:"stazione"}));
+	//ws.send(JSON.stringify({call:"busstopRequest", query:"stazione"}));
+	document.getElementById("input").oninput = function () {
+		var query = document.getElementById("input").value;
+		console.log(query);
+		ws.send(JSON.stringify({call:"busstopRequest", "query":query}));
+	}
 };
 
 ws.onmessage = function(data, flags) {
@@ -15,17 +20,23 @@ var cbList = {};
 cbList.busstopResponse = function (data) {
 	var html = '';
 	for (var i = 0; i < data.length; i++)
-		html += '<div>' + data[i].name + ', ' + data[i].city + '</div>';
+		html += '<div style="cursor: pointer;" onclick="loadBoard(' + data[i].id + ')">' + data[i].name + ', ' + data[i].city + '</div>';
 	document.getElementById("container").innerHTML =  html;
 }
+
 cbList.stationboardResponse = function (data) {
 	console.log("Result:", data);
+	var html = '';
+	for (var i = 0; i < data.length; i++)
+		html += '<div>' +
+			data[i].number + ', ' + data[i].direction + 
+			' in ' + 
+			data[i].countdown + ' min</div>';
+	document.getElementById("container").innerHTML =  html;
 }
 
 
-document.getElementById("input").oninput = function () {
-	var query = document.getElementById("input").value;
-	console.log(query);
-	ws.send(JSON.stringify({call:"busstopRequest", "query":query}));
-
+function loadBoard(id) {
+	console.log("Request board for: " + id);
+	ws.send(JSON.stringify({call:"stationboardRequest", query:id}));
 }
