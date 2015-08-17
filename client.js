@@ -1,4 +1,4 @@
-	var WebSocket = require('ws');
+var WebSocket = require('ws');
 var ws = new WebSocket('ws://192.168.12.136:8000');
 
 ws.on('open', function open() {
@@ -21,4 +21,3 @@ cbList.stationboardResponse = function (data) {
 	console.log("Result:", data);
 }
 module.exports = ws;
-
