@@ -1,6 +1,6 @@
 //config
 var port = 8000;
-var logLevel = 'info';
+var logLevel = 'debug';
 
 //api calls
 //62.101.1.162 is efa.mobilitaetsagentur.bz.it
@@ -138,11 +138,20 @@ function parseStationboard(el) {
 	var res = {};
 	/*year, month, day, hour,	minute*/
 	var d = el.dateTime;
+	log.debug(el.servingLine.trainNum);
+	log.debug(addRealtime());
 	/*2013-10-21T13:28:06.419Z*/
 	res.dateTime = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").format();
 	res.countdown = el.countdown;
 	res.direction = el.servingLine.direction;
+
+	res.realtime = el.servingLine.realtime;
+	res.name = el.servingLine.name;
 	res.number = el.servingLine.number;
 	res.symbol = el.servingLine.symbol;
 	return res;
+}
+
+function addRealtime() {
+	return 0;
 }

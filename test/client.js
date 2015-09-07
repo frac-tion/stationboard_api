@@ -1,5 +1,5 @@
-//var ws = new WebSocket('ws://192.168.12.136:8000');
-var ws = new WebSocket('ws://sparber.net:62249');
+var ws = new WebSocket('ws://127.0.0.1:8000');
+//var ws = new WebSocket('ws://sparber.net:62249');
 
 ws.onopen = function (event) {
 	//ws.send(JSON.stringify({call:"busstopRequest", query:"stazione"}));
@@ -12,7 +12,6 @@ ws.onopen = function (event) {
 
 ws.onmessage = function(data, flags) {
 	data = JSON.parse(data.data);
-	console.log(data.cb);
 	cbList[data.cb](data.res);
 }
 
@@ -30,8 +29,8 @@ cbList.stationboardResponse = function (data) {
 	for (var i = 0; i < data.length; i++)
 		html += '<div>' +
 			data[i].number + ', ' + data[i].direction + 
-			' in ' + 
-			data[i].countdown + ' min</div>';
+			' at ' + 
+			data[i].dateTime + '</div>';
 	document.getElementById("container").innerHTML =  html;
 }
 
