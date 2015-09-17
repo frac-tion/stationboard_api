@@ -1,5 +1,5 @@
 var WebSocket = require('ws');
-var ws = new WebSocket('ws://192.168.12.136:8000');
+var ws = new WebSocket('ws://localhost:8000');
 
 ws.on('open', function open() {
 	//ws.send(JSON.stringify({call:"busstopRequest", query:"lana"}));

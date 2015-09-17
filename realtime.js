@@ -1,4 +1,4 @@
-var logLevel = 'warning';
+var logLevel = 'debug';
 
 //var DEPARTURE_STATION_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/";
 //var REALTIME_TRAIN_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/" //IDStazionePartenza/numeroTreno
@@ -97,7 +97,7 @@ function realtimeTrenitalia(stationName, dateTime, callback) {
 				var lines = body.split("\n");
 				var stationId = lines[0].split("|")[1];
 				if (lines.length < 2 || lines[1] == '') {
-					log.debug("Station ID: " + stationId);
+					log.debug("Station ID: " + stationId + ", Station name: " + stationName);
 				}
 				else {
 					log.warning("More than one Station (I will take the first one): \n" + body);
@@ -135,7 +135,10 @@ function parseStation(dep) {
 	var res = {};
 	dep.forEach(function (el) {
 		log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
-		res[el.numeroTreno] = el.ritardo;
+		res[el.numeroTreno] = {};
+		res[el.numeroTreno].delay = el.ritardo;
+		res[el.numeroTreno].destiation = el.destinazione;
+		res[el.numeroTreno].departure = (new Date(el.orarioPartenza)).toJSON();
 	});
 	return res;
 }
