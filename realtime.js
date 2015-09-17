@@ -1,11 +1,9 @@
-var logLevel = 'debug';
+var logLevel = 'warning';
 
-//88 - VERONA PORTA NUOVA|88-S02430
-//88 - BRESCIA|88-N00201
-var DEPARTURE_STATION_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/";
-var REALTIME_TRAIN_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/" //IDStazionePartenza/numeroTreno
-var FIND_STATION_ID_URL = "http://viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/autocompletaStazione/"
-var STATION_DEPARTURES_URL = "http://viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/partenze/" //IDStazione/{date.toString()}
+//var DEPARTURE_STATION_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/";
+//var REALTIME_TRAIN_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/andamentoTreno/" //IDStazionePartenza/numeroTreno
+var FIND_STATION_ID_API = "http://viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/autocompletaStazione/"
+var STATION_DEPARTURES_API = "http://viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/partenze/" //IDStazione/{date.toString()}
 
 /*
  * Log level:
@@ -25,12 +23,10 @@ var request = require('request');
 
 var log = new Log(logLevel);
 
-var date = new Date();
-realtimeTrenitaliaByStation("trento", date.toString());
-//realtimeTrenitaliaByStation("MERANO");
-//realtimeTrenitaliaByTrain(10705);
-//realtimeTrenitalia(81);
-function realtimeTrenitaliaByTrain(trainId, callback) {
+//var date = new Date();
+//realtimeTrenitaliaByStation("trento", date.toString());
+
+/*function realtimeTrenitaliaByTrain(trainId, callback) {
 	departureStation(trainId);
 
 	//calls trainDelay for delay
@@ -79,6 +75,7 @@ function realtimeTrenitaliaByTrain(trainId, callback) {
 		});
 	}
 }
+*/
 
 
 //gets departures of a train station
@@ -88,7 +85,7 @@ function realtimeTrenitaliaByStation(stationName, dateTime, callback) {
 
 	//calls trainDelay for delay
 	function departureStation(query) {
-		request({url: FIND_STATION_ID_URL  + query,
+		request({url: FIND_STATION_ID_API  + query,
 			gzip: true,
 			headers: {
 				'Connection': 'keep-alive',
@@ -107,12 +104,11 @@ function realtimeTrenitaliaByStation(stationName, dateTime, callback) {
 				}
 				stationDepartures(stationId + "/" + dateTime);
 			}
-
 		});
 	}
 
 	function stationDepartures(query) {
-		request({url: STATION_DEPARTURES_URL + query,
+		request({url: STATION_DEPARTURES_API + query,
 			json: true,
 			gzip: true,
 			headers: {
@@ -125,16 +121,12 @@ function realtimeTrenitaliaByStation(stationName, dateTime, callback) {
 				if (res.statusCode === 200) {
 					if(callback)
 						callback(parseStation(body));
-					else
-						log.debug(parseStation(body));
 				}
 				else
-					log.err("StatuCode: " + res.statusCode);
+					log.error("StatuCode: " + res.statusCode);
 			}
 			else
 				log.error(err);
-
-
 		});
 	}
 }
@@ -142,7 +134,7 @@ function realtimeTrenitaliaByStation(stationName, dateTime, callback) {
 function parseStation(dep) {
 	var res = {};
 	dep.forEach(function (el) {
-		//log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
+		log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
 		res[el.numeroTreno] = el.ritardo;
 	});
 	return res;
