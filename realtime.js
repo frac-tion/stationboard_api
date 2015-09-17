@@ -26,7 +26,7 @@ var request = require('request');
 var log = new Log(logLevel);
 
 var date = new Date();
-realtimeTrenitaliaByStation("MERANO MAIA BASSA", date.toString());
+realtimeTrenitaliaByStation("trento", date.toString());
 //realtimeTrenitaliaByStation("MERANO");
 //realtimeTrenitaliaByTrain(10705);
 //realtimeTrenitalia(81);
@@ -52,8 +52,8 @@ function realtimeTrenitaliaByTrain(trainId, callback) {
 				}
 				else {
 					log.warning("More than one train: \n" + body);
-					if(callback)
-						callback();
+					departure = lines[0].split("|")[1].split("-")[1];
+					//trainDelay(departure + "/" + query);
 				}
 			}
 
@@ -81,8 +81,10 @@ function realtimeTrenitaliaByTrain(trainId, callback) {
 }
 
 
-function realtimeTrenitaliaByStation(trainId, dateTime, callback) {
-	departureStation(trainId);
+//gets departures of a train station
+//callback: depature delays of all trains
+function realtimeTrenitaliaByStation(stationName, dateTime, callback) {
+	departureStation(stationName);
 
 	//calls trainDelay for delay
 	function departureStation(query) {
@@ -96,16 +98,14 @@ function realtimeTrenitaliaByStation(trainId, dateTime, callback) {
 		function(err, res, body) {
 			if(!err) {
 				var lines = body.split("\n");
+				var stationId = lines[0].split("|")[1];
 				if (lines.length < 2 || lines[1] == '') {
-					var station = lines[0].split("|")[1];
-					log.debug("Station ID: " + station);
-					stationDepartures(station + "/" + dateTime);
+					log.debug("Station ID: " + stationId);
 				}
 				else {
-					log.warning("More than one Station: \n" + body);
-					if(callback)
-						callback();
+					log.warning("More than one Station (I will take the first one): \n" + body);
 				}
+				stationDepartures(stationId + "/" + dateTime);
 			}
 
 		});
@@ -123,9 +123,10 @@ function realtimeTrenitaliaByStation(trainId, dateTime, callback) {
 		function(err, res, body) {
 			if(!err) {
 				if (res.statusCode === 200) {
-					log.debug(body);
 					if(callback)
-						callback(body);
+						callback(parseStation(body));
+					else
+						log.debug(parseStation(body));
 				}
 				else
 					log.err("StatuCode: " + res.statusCode);
@@ -138,8 +139,11 @@ function realtimeTrenitaliaByStation(trainId, dateTime, callback) {
 	}
 }
 
-function parseTrain(el) {
+function parseStation(dep) {
 	var res = {};
-	res.delay = el.
+	dep.forEach(function (el) {
+		//log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
+		res[el.numeroTreno] = el.ritardo;
+	});
 	return res;
 }
