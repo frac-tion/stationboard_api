@@ -12,6 +12,13 @@ ws.send(JSON.stringify({call:"busstopRequest", query:"lana"}));
 ws.send(JSON.stringify({call:"stationboardRequest", query:"66002351"}));
 ```
 
+###Realtime plugins
+####Trenitalia
+Callback gets a JSON {trainId : delay(in minutes), ...}
+```javascript
+realtimeTrenitalia(stationName, dateTime, callback);
+```
+
 ###API of mobilitaetsagentur.bz.it
 ####Request for finding busstops
 * name_sf is search string
