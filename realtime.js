@@ -80,7 +80,7 @@ var log = new Log(logLevel);
 
 //gets departures of a train station
 //callback: depature delays of all trains
-function realtimeTrenitaliaByStation(stationName, dateTime, callback) {
+function realtimeTrenitalia(stationName, dateTime, callback) {
 	departureStation(stationName);
 
 	//calls trainDelay for delay
@@ -139,3 +139,5 @@ function parseStation(dep) {
 	});
 	return res;
 }
+
+module.exports = realtimeTrenitalia;
