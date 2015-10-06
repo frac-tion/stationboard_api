@@ -137,6 +137,7 @@ function stationboardRequest(query, ws) {
 				}
 				log.debug("Stationboard List:", JSON.stringify(list));
 				if (isTrainStation) {
+          stationName = stationName.replace(/Stazione /gi, "").replace(/ - /gi, "-");
 					realtime(stationName, dateTime.toString(), function(delayList) {
 						console.log(delayList);
 						/*list.forEach(function (el) {
