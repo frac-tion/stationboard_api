@@ -139,14 +139,19 @@ function stationboardRequest(query, ws) {
 				}
 				log.debug("Stationboard List:", JSON.stringify(list));
 				if (isTrainStation) {
-          stationName = stationName.replace(/Stazione /gi, "").replace(/ - /gi, "-");
-					realtime(stationName, dateTime.toString(), function(delayList) {
+					realtime(query, dateTime.toString(), function(delayList) {
 						console.log(delayList);
 						/*list.forEach(function (el) {
 							if (delayList[el.number] !== undefined)
 								console.log(delayList[el.number]);
 						});
 						*/
+
+						list.forEach(function(el) {
+							if (delayList[el.number] !== undefined)
+								el.dateTime += " delay of " + delayList[el.number].delay;
+
+						});
 						if (ws)
 							ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
 					});
