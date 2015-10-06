@@ -4,7 +4,7 @@ var logLevel = 'debug';
 
 //api calls
 //62.101.1.162 is efa.mobilitaetsagentur.bz.it
-var BUSSTOP_QUERY = 'http://62.101.1.162/apb/XSLT_STOPFINDER_REQUEST?language=it&outputFormat=JSON&itdLPxx_usage=origin&useLocalityMainStop=true&doNotSearchForStops_sf=1&SpEncId=1&odvSugMacro=true&name_sf=';
+var BUSSTOP_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_STOPFINDER_REQUEST?language=it&outputFormat=JSON&itdLPxx_usage=origin&useLocalityMainStop=true&doNotSearchForStops_sf=1&SpEncId=0&odvSugMacro=true&name_sf=';
 
 var STATIONBOARD_QUERY = 'http://62.101.1.162/apb/XSLT_DM_REQUEST?language=it&deleteAssignedStops_dm=1&trITMOTvalue100=7&useProxFootSearch=0&itdLPxx_today=10&mode=direct&lsShowTrainsExplicit=0&type_dm=any&includedMeans=checkbox&inclMOT_ZUG=1&inclMOT_BUS=1&inclMOT_8=1&inclMOT_9=1&locationServerActive=1&convertStopsPTKernel2LocationServer=1&convertAddressesITKernel2LocationServer=1&convertCoord2LocationServer=1&convertCrossingsITKernel2LocationServer=1&convertPOIsITKernel2LocationServer=1&stateless=1&itOptionsActive=1&ptOptionsActive=1&itdLPxx_depOnly=1&maxAssignedStops=1&hideBannerInfo=1&execInst=normal&limit=15&useAllStops=1&outputFormat=JSON&name_dm=';
 var STATIONBOARD_NEXT_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_REQUEST?language=it&outputFormat=JSONrequestID=1&command=dmNext&itdLPxx_version=text&sessionID=' //I dont get the sessionID from the first call
@@ -102,8 +102,10 @@ function busstopRequest(query, ws) {
 
 function parseBusstop(el) {
 	var res = {};
-	res.name = el.object;
-	res.city = el.posttown;
+	res.name = el.name;
+	res.city = ""
+	//res.name = el.object;
+	//res.city = el.posttown;
 	res.id = el.stateless;
 	return res;
 }
