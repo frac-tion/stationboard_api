@@ -140,7 +140,6 @@ function stationboardRequest(query, ws) {
         log.debug("Stationboard List:", JSON.stringify(list));
         if (isTrainStation) {
           realtime(query, dateTime.toString(), function(delayList) {
-
             list.forEach(function(el) {
               if (delayList[el.number] !== undefined) {
                 el.delay = delayList[el.number].delay;
@@ -149,9 +148,9 @@ function stationboardRequest(query, ws) {
             });
             for (var el in delayList)
               list.unshift(delayList[el]);
-            log.debug(delayList);
+
+            sortBy(list, "departure");
             log.debug(list);
-            log.debug(delayList);
             if (ws)
               ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
           });
