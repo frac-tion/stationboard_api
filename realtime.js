@@ -70,33 +70,37 @@ var log = new Log(logLevel);
 //gets departures of a train station from a SII id and uses the lookup table to get the trenitalia station id
 //callback: depature delays of all trains
 function realtimeTrenitalia(stationId, dateTime, callback) {
-  stationDepartures(lookup[stationId] + "/" + dateTime);
-  function stationDepartures(query) {
-    log.debug(STATION_DEPARTURES_API + query);
-    request({url: STATION_DEPARTURES_API + query,
-      json: true,
-      gzip: true,
-      headers: {
-        'Connection': 'keep-alive',
-        'Accept-Encoding': 'gzip, deflate'
-      }
-    },
-    function(err, res, body) {
-      if(!err) {
-        if (res.statusCode === 200) {
-          //log.debug(body);
-          trainDelay(body, callback);
-          //trainDelays(el.codOrigine + "/" + el.numeroTreno);
-          //if(callback)
-          //  callback(parseStation(body));
+  if (lookup[stationId] != undefined) {
+    stationDepartures(lookup[stationId] + "/" + dateTime);
+    function stationDepartures(query) {
+      log.debug(STATION_DEPARTURES_API + query);
+      request({url: STATION_DEPARTURES_API + query,
+        json: true,
+        gzip: true,
+        headers: {
+          'Connection': 'keep-alive',
+          'Accept-Encoding': 'gzip, deflate'
+        }
+      },
+      function(err, res, body) {
+        if(!err) {
+          if (res.statusCode === 200) {
+            //log.debug(body);
+            trainDelay(body, callback);
+            //trainDelays(el.codOrigine + "/" + el.numeroTreno);
+            //if(callback)
+            //  callback(parseStation(body));
+          }
+          else
+            log.error("StatuCode: " + res.statusCode);
         }
         else
-          log.error("StatuCode: " + res.statusCode);
-      }
-      else
-        log.error(err);
-    });
+          log.error(err);
+      });
+    }
   }
+  else
+    callback({});
 }
 
 function parseStation(dep) {
@@ -131,18 +135,18 @@ function trainDelay(list, callback) {
         resultList[body.numeroTreno] = parseTrain(body);
         if (count == list.length)
           callback(resultList);
-        }
+      }
     });
   })
 }
 
 function parseTrain(train) {
   var res = {};
-    log.debug(train.numeroTreno + " has a delay of " + train.ritardo + " min");
-    res.delay = train.ritardo;
-    res.number = train.numeroTreno;
-    res.destination = train.destinazione;
-    res.departure = (new Date(train.orarioPartenza)).getTime();
+  log.debug(train.numeroTreno + " has a delay of " + train.ritardo + " min");
+  res.delay = train.ritardo;
+  res.number = train.numeroTreno;
+  res.destination = train.destinazione;
+  res.departure = (new Date(train.orarioPartenza)).getTime();
   return res;
 }
 
