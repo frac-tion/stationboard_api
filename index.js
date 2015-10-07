@@ -36,161 +36,161 @@ var wss = new WebSocketServer({ port: port });
 log.info("WebSocket listening on " + port);
 
 wss.on('connection', function connection(ws) {
-	log.info("New client connected");
-	ws.on('message', function incoming(message) {
-		log.info('received: %s', message);
-		try {
-			message = JSON.parse(message);
-			if (message.call !== undefined && message.query !==undefined) {
-				if (message.call == "busstopRequest")
-					busstopRequest(message.query, ws);
-				else if (message.call == "stationboardRequest")
-					stationboardRequest(message.query, ws);
-				else
-					log.info("Unknown call");
-			}
-			else
-				log.info("Missing argument");
-		} catch (exc) {
-			log.error("JSON parse error:", exc);
-		}
-	});
+  log.info("New client connected");
+  ws.on('message', function incoming(message) {
+    log.info('received: %s', message);
+    try {
+      message = JSON.parse(message);
+      if (message.call !== undefined && message.query !==undefined) {
+        if (message.call == "busstopRequest")
+          busstopRequest(message.query, ws);
+        else if (message.call == "stationboardRequest")
+          stationboardRequest(message.query, ws);
+        else
+          log.info("Unknown call");
+      }
+      else
+        log.info("Missing argument");
+    } catch (exc) {
+      log.error("JSON parse error:", exc);
+    }
+  });
 });
 
 function busstopRequest(query, ws) {
-	var list = [];
-	console.time("Request Time");
-	request({url: BUSSTOP_QUERY + query,
-		json: true,
-		gzip: true,
-		headers: {
-			'Connection': 'keep-alive',
-			'Accept-Encoding': 'gzip, deflate'
-		}
-	},
-	function(err, res, body) {
-		console.timeEnd("Request Time");
-		if(!err) {
-			try {
-				//var busstopList = JSON.parse(body).stopFinder.points;
-				log.debug(body);
-				var busstopList = body.stopFinder.points;
-				if (busstopList !== null) {
-					if (busstopList.point !== undefined) {
-						list.push(parseBusstop(busstopList.point));
-					}
-					else {
-						sortBy(busstopList, "quality");
-						for (var i = 0; i < busstopList.length; i++) {
-							if (busstopList[i].anyType == "stop") {
-								list.push(parseBusstop(busstopList[i]));
-							}
-						}
-					}
-				}
-				log.debug("Busstop List:", JSON.stringify(list));
-				if (ws)
-					ws.send(JSON.stringify({res: list, cb: "busstopResponse"}));
-			} catch (exc) {
-				log.error("JSON parse error:", exc);
-			}
-		}
-		else
-			log.error("HTTP error:", err);
-	});
+  var list = [];
+  console.time("Request Time");
+  request({url: BUSSTOP_QUERY + query,
+    json: true,
+    gzip: true,
+    headers: {
+      'Connection': 'keep-alive',
+      'Accept-Encoding': 'gzip, deflate'
+    }
+  },
+  function(err, res, body) {
+    console.timeEnd("Request Time");
+    if(!err) {
+      try {
+        //var busstopList = JSON.parse(body).stopFinder.points;
+        log.debug(body);
+        var busstopList = body.stopFinder.points;
+        if (busstopList !== null) {
+          if (busstopList.point !== undefined) {
+            list.push(parseBusstop(busstopList.point));
+          }
+          else {
+            sortBy(busstopList, "quality");
+            for (var i = 0; i < busstopList.length; i++) {
+              if (busstopList[i].anyType == "stop") {
+                list.push(parseBusstop(busstopList[i]));
+              }
+            }
+          }
+        }
+        log.debug("Busstop List:", JSON.stringify(list));
+        if (ws)
+          ws.send(JSON.stringify({res: list, cb: "busstopResponse"}));
+      } catch (exc) {
+        log.error("JSON parse error:", exc);
+      }
+    }
+    else
+      log.error("HTTP error:", err);
+  });
 }
 
 function parseBusstop(el) {
-	var res = {};
-	res.name = el.name;
-	res.city = ""
-	//res.name = el.object;
-	//res.city = el.posttown;
-	res.id = el.stateless;
-	return res;
+  var res = {};
+  res.name = el.name;
+  res.city = ""
+    //res.name = el.object;
+    //res.city = el.posttown;
+    res.id = el.stateless;
+  return res;
 }
 
 function stationboardRequest(query, ws) {
-	var list = [];
-	request({url: STATIONBOARD_QUERY + query,
-		json: true,
-		gzip: true,
-		headers: {
-			'Connection': 'keep-alive',
-			'Accept-Encoding': 'gzip, deflate'
-		}
-	},
-	function(err, res, body) {
-		if(!err) {
-			try {
-				//var departureList = JSON.parse(body).departureList;
-				var departureList = body.departureList;
+  var list = [];
+  request({url: STATIONBOARD_QUERY + query,
+    json: true,
+    gzip: true,
+    headers: {
+      'Connection': 'keep-alive',
+      'Accept-Encoding': 'gzip, deflate'
+    }
+  },
+  function(err, res, body) {
+    if(!err) {
+      try {
+        //var departureList = JSON.parse(body).departureList;
+        var departureList = body.departureList;
 
-				var stationName = body.dm.points.point.object;
-				var isTrainStation = false;
-				var dateTime = new Date();
+        var stationName = body.dm.points.point.object;
+        var isTrainStation = false;
+        var dateTime = new Date();
 
-				if (body.servingLines.trainInfo !== undefined)
-						isTrainStation = true;
+        if (body.servingLines.trainInfo !== undefined)
+          isTrainStation = true;
 
-				for (var i = 0; i < departureList.length; i++) {
-					list.push(parseStationboard(departureList[i]));
-					var trainNum = departureList[i].servingLine.trainNum;
-				}
-				log.debug("Stationboard List:", JSON.stringify(list));
-				if (isTrainStation) {
-					realtime(query, dateTime.toString(), function(delayList) {
-						console.log(delayList);
-						/*list.forEach(function (el) {
-							if (delayList[el.number] !== undefined)
-								console.log(delayList[el.number]);
-						});
-						*/
+        for (var i = 0; i < departureList.length; i++) {
+          list.push(parseStationboard(departureList[i]));
+          var trainNum = departureList[i].servingLine.trainNum;
+        }
+        log.debug("Stationboard List:", JSON.stringify(list));
+        if (isTrainStation) {
+          realtime(query, dateTime.toString(), function(delayList) {
 
-						list.forEach(function(el) {
-							if (delayList[el.number] !== undefined)
-								el.dateTime += " delay of " + delayList[el.number].delay;
-
-						});
-						if (ws)
-							ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
-					});
-				}
-				else {
-					if (ws)
-						ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
-				}
-			} catch (exc) {
-				log.error("JSON parse error:", exc);
-			}
-		}
-		else
-			log.error("HTTP error:", err);
-	});
+            list.forEach(function(el) {
+              if (delayList[el.number] !== undefined) {
+                el.delay = delayList[el.number].delay;
+                delete delayList[el.number];
+              }
+            });
+            for (var el in delayList)
+              list.unshift(delayList[el]);
+            log.debug(delayList);
+            log.debug(list);
+            log.debug(delayList);
+            if (ws)
+              ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
+          });
+        }
+        else {
+          if (ws)
+            ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
+        }
+      } catch (exc) {
+        log.error("JSON parse error:", exc);
+      }
+    }
+    else
+      log.error("HTTP error:", err);
+  });
 }
 
 function parseStationboard(el) {
-	var res = {};
-	/*year, month, day, hour,	minute*/
-	var d = el.dateTime;
-	//	log.debug(el.servingLine.trainNum);
-	//	log.debug(addRealtime());
-	/*2013-10-21T13:28:06.419Z*/
-	res.dateTime = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").format();
-	res.countdown = el.countdown;
-	res.direction = el.servingLine.direction;
+  var res = {};
+  /*year, month, day, hour,	minute*/
+  var d = el.dateTime;
+  //	log.debug(el.servingLine.trainNum);
+  //	log.debug(addRealtime());
+  /*2013-10-21T13:28:06.419Z*/
+  res.departure = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").format();
+  //res.countdown = el.countdown;
+  res.destination = el.servingLine.direction;
 
-	//res.realtime = el.servingLine.realtime;
-	res.name = el.servingLine.name;
-	var trainNum = el.servingLine.trainNum;
-	if (trainNum !== undefined)
-		res.number = trainNum;
-	else
-		res.number = el.servingLine.number;
-	res.symbol = el.servingLine.symbol;
-	return res;
+  //res.realtime = el.servingLine.realtime;
+  res.name = el.servingLine.name;
+  var trainNum = el.servingLine.trainNum;
+  if (trainNum !== undefined)
+    res.number = trainNum;
+  else
+    res.number = el.servingLine.number;
+  //res.symbol = el.servingLine.symbol;
+  return res;
 }
 
 function addRealtime() {
-	return 0;
+  return 0;
 }

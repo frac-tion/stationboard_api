@@ -152,6 +152,7 @@ departure = lines[0].split("|")[1].split("-")[1];
 */
 		stationDepartures(lookup[stationId] + "/" + dateTime);
 		function stationDepartures(query) {
+			log.debug(STATION_DEPARTURES_API + query);
 			request({url: STATION_DEPARTURES_API + query,
 				json: true,
 				gzip: true,
@@ -181,7 +182,8 @@ function parseStation(dep) {
 		log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
 		res[el.numeroTreno] = {};
 		res[el.numeroTreno].delay = el.ritardo;
-		res[el.numeroTreno].destiation = el.destinazione;
+		res[el.numeroTreno].number = el.numeroTreno;
+		res[el.numeroTreno].destination = el.destinazione;
 		res[el.numeroTreno].departure = (new Date(el.orarioPartenza)).toJSON();
 	});
 	return res;

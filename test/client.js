@@ -28,9 +28,9 @@ cbList.stationboardResponse = function (data) {
 	var html = '';
 	for (var i = 0; i < data.length; i++)
 		html += '<div>' +
-			data[i].number + ', ' + data[i].direction + 
+			data[i].number + ', ' + data[i].destination + 
 			' at ' + 
-			data[i].dateTime + '</div>';
+			data[i].departure + ' with a delay of ' + data[i].delay + '</div>';
 	document.getElementById("container").innerHTML =  html;
 }
 
