@@ -42,9 +42,26 @@ function realtimeSad(stationId, dateTime, callback) {
           //  callback(parseStation(body));
           var $ = cheerio.load(body);
           var treno = $('.treno');
-          while (treno.next().length > 0) {
-            var delay = treno.first().text().indexOf('+');
-            console.log(delay);
+          while (treno.length > 0) {
+						var curr = treno.first().text();
+						
+						//search for delay
+            var delayPos = curr.indexOf('+');
+						if (delayPos == -1)
+            	delayPos = curr.indexOf('- ');
+
+						//search end of delay
+						if (delayPos != -1) {
+							var delay = curr.slice(delayPos, curr.indexOf('\n', delayPos));
+						}
+
+						var numberPos = curr.indexOf(String.fromCharCode(160));
+						console.log(curr.slice(numberPos + 1, curr.indexOf(String.fromCharCode(160), numberPos + 1)));
+						var currDest = curr.replace(/  |\n/gi, "");
+						var indexDest = currDest.lastIndexOf(String.fromCharCode(160));
+						console.log(currDest.slice(indexDest + 2));
+						if (delay != undefined)
+            	console.log(delay);
 
             treno = treno.next()
           }
