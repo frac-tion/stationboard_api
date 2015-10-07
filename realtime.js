@@ -142,7 +142,7 @@ function parseTrain(train) {
     res.delay = train.ritardo;
     res.number = train.numeroTreno;
     res.destination = train.destinazione;
-    res.departure = (new Date(train.orarioPartenza)).toJSON();
+    res.departure = (new Date(train.orarioPartenza)).toString();
   return res;
 }
 
