@@ -30,7 +30,9 @@ cbList.stationboardResponse = function (data) {
 		html += '<div>' +
 			data[i].number + ', ' + data[i].destination + 
 			' at ' + 
-			data[i].departure + ' with a delay of ' + data[i].delay + '</div>';
+			(new Date(data[i].departure)).toLocaleString() +
+      ((data[i].delay != undefined) ? (' with a delay of ' + data[i].delay) : '' ) +
+      '</div>';
 	document.getElementById("container").innerHTML =  html;
 }
 

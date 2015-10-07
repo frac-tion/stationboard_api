@@ -176,7 +176,7 @@ function parseStationboard(el) {
   //	log.debug(el.servingLine.trainNum);
   //	log.debug(addRealtime());
   /*2013-10-21T13:28:06.419Z*/
-  res.departure = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").toString();
+  res.departure = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").valueOf();
   //res.countdown = el.countdown;
   res.destination = el.servingLine.direction;
 
