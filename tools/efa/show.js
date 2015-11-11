@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-var fb = fs.openSync('../data/allStopsEFA.json', 'r');
+var fb = fs.openSync('../../data/allStopsEFA.json', 'r');
 var data  = JSON.parse(fs.readFileSync(fb, 'utf8')).pins;
 console.log(data);
 
