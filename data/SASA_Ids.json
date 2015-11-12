@@ -1307,17 +1307,7 @@
         "ORT_NR": 863,
         "ORT_POS_BREITE": 46.47986,
         "ORT_POS_LAENGE": 11.33452
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.47986,
-      "ORT_POS_LAENGE": 11.33452
-    }
-  },
-  {
-    "ORT_NAME": "Acciaierie - Stahlwerke",
-    "ORT_GEMEINDE": "Bolzano - Bozen",
-    "busstops": [
+      },
       {
         "ORT_NR": 5199,
         "ORT_POS_BREITE": 46.47892,
@@ -1325,8 +1315,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.47892,
-      "ORT_POS_LAENGE": 11.33421
+      "ORT_POS_BREITE": 46.47939,
+      "ORT_POS_LAENGE": 11.334365
     }
   },
   {
@@ -1452,17 +1442,7 @@
         "ORT_NR": 406,
         "ORT_POS_BREITE": 46.61869,
         "ORT_POS_LAENGE": 11.14193
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.61869,
-      "ORT_POS_LAENGE": 11.14193
-    }
-  },
-  {
-    "ORT_NAME": "Autostazione - Busbahnhof",
-    "ORT_GEMEINDE": "Lana - Lana",
-    "busstops": [
+      },
       {
         "ORT_NR": 466,
         "ORT_POS_BREITE": 46.61813,
@@ -1470,8 +1450,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.61813,
-      "ORT_POS_LAENGE": 11.14169
+      "ORT_POS_BREITE": 46.61841,
+      "ORT_POS_LAENGE": 11.14181
     }
   },
   {
@@ -2227,17 +2207,7 @@
         "ORT_NR": 5272,
         "ORT_POS_BREITE": 46.48163,
         "ORT_POS_LAENGE": 11.31605
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.48163,
-      "ORT_POS_LAENGE": 11.31605
-    }
-  },
-  {
-    "ORT_NAME": "Casanova - Kaiserau",
-    "ORT_GEMEINDE": "Bolzano - Bozen",
-    "busstops": [
+      },
       {
         "ORT_NR": 5273,
         "ORT_POS_BREITE": 46.48097,
@@ -2245,8 +2215,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.48097,
-      "ORT_POS_LAENGE": 11.31514
+      "ORT_POS_BREITE": 46.481300000000005,
+      "ORT_POS_LAENGE": 11.315595
     }
   },
   {
@@ -2462,17 +2432,7 @@
         "ORT_NR": 501,
         "ORT_POS_BREITE": 46.61588,
         "ORT_POS_LAENGE": 11.14909
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.615629999999996,
-      "ORT_POS_LAENGE": 11.14965
-    }
-  },
-  {
-    "ORT_NAME": "Chiesa S. Croce - Kreuzkirche",
-    "ORT_GEMEINDE": "Lana - Lana",
-    "busstops": [
+      },
       {
         "ORT_NR": 505,
         "ORT_POS_BREITE": 46.61586,
@@ -2480,8 +2440,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.61586,
-      "ORT_POS_LAENGE": 11.14984
+      "ORT_POS_BREITE": 46.61570666666666,
+      "ORT_POS_LAENGE": 11.149713333333333
     }
   },
   {
@@ -3272,17 +3232,7 @@
         "ORT_NR": 726,
         "ORT_POS_BREITE": 46.68303,
         "ORT_POS_LAENGE": 11.1613
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.683065,
-      "ORT_POS_LAENGE": 11.16131
-    }
-  },
-  {
-    "ORT_NAME": "Lido - Schwimmbad",
-    "ORT_GEMEINDE": "Tirolo - Tirol",
-    "busstops": [
+      },
       {
         "ORT_NR": 739,
         "ORT_POS_BREITE": 46.68271,
@@ -3295,8 +3245,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.682765,
-      "ORT_POS_LAENGE": 11.161280000000001
+      "ORT_POS_BREITE": 46.682914999999994,
+      "ORT_POS_LAENGE": 11.161295
     }
   },
   {
@@ -3827,11 +3777,16 @@
         "ORT_NR": 905,
         "ORT_POS_BREITE": 46.40306,
         "ORT_POS_LAENGE": 11.31875
+      },
+      {
+        "ORT_NR": 5065,
+        "ORT_POS_BREITE": 46.40318,
+        "ORT_POS_LAENGE": 11.31874
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.40306,
-      "ORT_POS_LAENGE": 11.31875
+      "ORT_POS_BREITE": 46.40312,
+      "ORT_POS_LAENGE": 11.318745
     }
   },
   {
@@ -3842,26 +3797,21 @@
         "ORT_NR": 951,
         "ORT_POS_BREITE": 46.41316,
         "ORT_POS_LAENGE": 11.30464
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.41316,
-      "ORT_POS_LAENGE": 11.30464
-    }
-  },
-  {
-    "ORT_NAME": "Paese - Dorf",
-    "ORT_GEMEINDE": "Bronzolo - Branzoll",
-    "busstops": [
+      },
       {
-        "ORT_NR": 5065,
-        "ORT_POS_BREITE": 46.40318,
-        "ORT_POS_LAENGE": 11.31874
+        "ORT_NR": 9907,
+        "ORT_POS_BREITE": 46.4132,
+        "ORT_POS_LAENGE": 11.3048
+      },
+      {
+        "ORT_NR": 9908,
+        "ORT_POS_BREITE": 46.41379,
+        "ORT_POS_LAENGE": 11.305
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.40318,
-      "ORT_POS_LAENGE": 11.31874
+      "ORT_POS_BREITE": 46.413383333333336,
+      "ORT_POS_LAENGE": 11.304813333333334
     }
   },
   {
@@ -3917,26 +3867,6 @@
     "coords": {
       "ORT_POS_BREITE": 46.560514999999995,
       "ORT_POS_LAENGE": 11.22363
-    }
-  },
-  {
-    "ORT_NAME": "Paese - Dorf",
-    "ORT_GEMEINDE": "Vadena - Pfatten",
-    "busstops": [
-      {
-        "ORT_NR": 9907,
-        "ORT_POS_BREITE": 46.4132,
-        "ORT_POS_LAENGE": 11.3048
-      },
-      {
-        "ORT_NR": 9908,
-        "ORT_POS_BREITE": 46.41379,
-        "ORT_POS_LAENGE": 11.305
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.413495,
-      "ORT_POS_LAENGE": 11.3049
     }
   },
   {
@@ -4517,17 +4447,7 @@
         "ORT_NR": 6923,
         "ORT_POS_BREITE": 46.56359,
         "ORT_POS_LAENGE": 11.16941
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.56359,
-      "ORT_POS_LAENGE": 11.16941
-    }
-  },
-  {
-    "ORT_NAME": "Piazza Paese - Dorfplatz",
-    "ORT_GEMEINDE": "Tesimo - Tisens",
-    "busstops": [
+      },
       {
         "ORT_NR": 6924,
         "ORT_POS_BREITE": 46.56366,
@@ -4535,8 +4455,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.56366,
-      "ORT_POS_LAENGE": 11.16951
+      "ORT_POS_BREITE": 46.563625,
+      "ORT_POS_LAENGE": 11.16946
     }
   },
   {
@@ -6507,17 +6427,7 @@
         "ORT_NR": 5090,
         "ORT_POS_BREITE": 46.495,
         "ORT_POS_LAENGE": 11.39179
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.495,
-      "ORT_POS_LAENGE": 11.39179
-    }
-  },
-  {
-    "ORT_NAME": "Via Brennero - Brennerstr.",
-    "ORT_GEMEINDE": "Cornedo - Karneid",
-    "busstops": [
+      },
       {
         "ORT_NR": 5091,
         "ORT_POS_BREITE": 46.49511,
@@ -6525,8 +6435,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.49511,
-      "ORT_POS_LAENGE": 11.39165
+      "ORT_POS_BREITE": 46.495054999999994,
+      "ORT_POS_LAENGE": 11.39172
     }
   },
   {
@@ -7347,17 +7257,7 @@
         "ORT_NR": 5042,
         "ORT_POS_BREITE": 46.49233,
         "ORT_POS_LAENGE": 11.3414
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.492035,
-      "ORT_POS_LAENGE": 11.341470000000001
-    }
-  },
-  {
-    "ORT_NAME": "Via Firenze - Florenzerstr.",
-    "ORT_GEMEINDE": "Bolzano - Bozen",
-    "busstops": [
+      },
       {
         "ORT_NR": 5213,
         "ORT_POS_BREITE": 46.49214,
@@ -7365,8 +7265,8 @@
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.49214,
-      "ORT_POS_LAENGE": 11.34091
+      "ORT_POS_BREITE": 46.492070000000005,
+      "ORT_POS_LAENGE": 11.341283333333335
     }
   },
   {
@@ -9382,11 +9282,16 @@
         "ORT_NR": 860,
         "ORT_POS_BREITE": 46.54337,
         "ORT_POS_LAENGE": 11.2062
+      },
+      {
+        "ORT_NR": 9747,
+        "ORT_POS_BREITE": 46.54344,
+        "ORT_POS_LAENGE": 11.20594
       }
     ],
     "coords": {
-      "ORT_POS_BREITE": 46.54337,
-      "ORT_POS_LAENGE": 11.2062
+      "ORT_POS_BREITE": 46.543405,
+      "ORT_POS_LAENGE": 11.20607
     }
   },
   {
@@ -9427,21 +9332,6 @@
     "coords": {
       "ORT_POS_BREITE": 46.492205,
       "ORT_POS_LAENGE": 11.394065000000001
-    }
-  },
-  {
-    "ORT_NAME": "Vigili del Fuoco - Feuerwehr",
-    "ORT_GEMEINDE": "Nalles - Nals",
-    "busstops": [
-      {
-        "ORT_NR": 9747,
-        "ORT_POS_BREITE": 46.54344,
-        "ORT_POS_LAENGE": 11.20594
-      }
-    ],
-    "coords": {
-      "ORT_POS_BREITE": 46.54344,
-      "ORT_POS_LAENGE": 11.20594
     }
   },
   {

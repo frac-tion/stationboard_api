@@ -26,8 +26,41 @@ sasaList.forEach(function (sasaStop) {
     }
   }
   if (bestMatch !== undefined)
-    efaList[bestMatch].sasa = sasaStop.ORT_NAME;
+    efaList[bestMatch].sasa = saveIds(sasaStop.busstops);
 
 });
 
 console.log(JSON.stringify(efaList));
+
+//Create an array of the busstops ids
+function saveIds(stops) {
+  var stopArr = [];
+  stops.forEach(function(stop) {
+    stopArr.push(stop.ORT_NR);
+  });
+  return stopArr;
+}
+
+
+/*{
+  "ORT_NAME": "Aspmair - Aspmair",
+  "ORT_GEMEINDE": "Avelengo - Hafling",
+  "busstops": [
+  {
+  "ORT_NR": 9761,
+  "ORT_POS_BREITE": 46.63494,
+  "ORT_POS_LAENGE": 11.21741
+  },
+  {
+  "ORT_NR": 9762,
+  "ORT_POS_BREITE": 46.63501,
+  "ORT_POS_LAENGE": 11.21733
+  }
+  ],
+  "coords": {
+  "ORT_POS_BREITE": 46.634975,
+  "ORT_POS_LAENGE": 11.217369999999999
+  }
+  },
+
+*/
