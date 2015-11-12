@@ -19,6 +19,6 @@ request("http://opensasa.info/SASAplandata/?type=REC_ORT", function (err, res, b
               ORT_POS_LAENGE: 11.14775 } ]
               */
   });
-  console.log(body);
+  console.log(JSON.stringify(body));
 });
 
