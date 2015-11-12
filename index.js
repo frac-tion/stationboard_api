@@ -26,12 +26,19 @@ var Log = require('log');
 var request = require('request');
 var moment = require('moment');
 var sortBy = require("sort-array");
+var sortzzy = require('sortzzy')
+var fs = require("fs");
 var WebSocketServer = require('ws').Server;
 
 var realtime = require('./realtime');
 
 var log = new Log(logLevel);
 var wss = new WebSocketServer({ port: port });
+
+var busstopFile = fs.openSync("./data/allStopsWithSASA.json", "r");
+var busstopList = JSON.parse(fs.readFileSync(busstopFile));
+fs.closeSync(busstopFile);
+
 
 log.info("WebSocket listening on " + port);
 
@@ -58,56 +65,46 @@ wss.on('connection', function connection(ws) {
 });
 
 function busstopRequest(query, ws) {
-  var list = [];
-  console.time("Request Time");
-  request({url: BUSSTOP_QUERY + query,
-    json: true,
-    gzip: true,
-    headers: {
-      'Connection': 'keep-alive',
-      'Accept-Encoding': 'gzip, deflate'
-    }
-  },
-  function(err, res, body) {
-    console.timeEnd("Request Time");
-    if(!err) {
-      try {
-        //var busstopList = JSON.parse(body).stopFinder.points;
-        log.debug(body);
-        var busstopList = body.stopFinder.points;
-        if (busstopList !== null) {
-          if (busstopList.point !== undefined) {
-            list.push(parseBusstop(busstopList.point));
-          }
-          else {
-            sortBy(busstopList, "quality");
-            for (var i = 0; i < busstopList.length; i++) {
-              if (busstopList[i].anyType == "stop") {
-                list.push(parseBusstop(busstopList[i]));
-              }
-            }
-          }
-        }
-        log.debug("Busstop List:", JSON.stringify(list));
-        if (ws)
-          ws.send(JSON.stringify({res: list, cb: "busstopResponse"}));
-      } catch (exc) {
-        log.error("JSON parse error:", exc);
-      }
-    }
-    else
-      log.error("HTTP error:", err);
-  });
+  //var list = [];
+  //if (busstopList !== null) {
+  // parseBusstop(busstopList[i]));
+  //}
+  //log.debug("Busstop List:", JSON.stringify(list));
+  if (ws)
+    ws.send(JSON.stringify({res: findSuggests(query), cb: "busstopResponse"}));
 }
+/*'66008513': 
+  { de: { name: 'Martina', city: 'Tschlin' },
+  coords: { latitude: 46.88575227405, longitude: 10.46425345025 },
+  it: { name: 'Martina', city: 'Tschlin' } } }
+  */
 
-function parseBusstop(el) {
-  var res = {};
-  res.name = el.name;
-  res.city = ""
-    //res.name = el.object;
-    //res.city = el.posttown;
-    res.id = el.stateless;
-  return res;
+
+//has to return an array of stops ({name: "name", city: "city", id: "id as number"})
+function findSuggests(query) {
+  // Create the model to match against 
+  if (query !== undefined && query !== "") {
+    var matching = [];
+    for (i in busstopList) {
+      matching.push({name: busstopList[i].de.name, city: busstopList[i].de.city, id: i });
+    }
+
+    var model = {
+      name: query || "",
+      city: query || ""
+    }
+
+    // Define the fields  
+    var fields = [
+    {name: 'name', type: 'string', weight: 1, options: {ignoreCase: true}},
+    {name: 'city', type: 'string', weight: 1, options: {ignoreCase: true}},
+    ]
+
+    var result = sortzzy.sort(matching, model, fields, {dataOnly: true});
+    return result.slice(0, 20);
+  }
+  else
+    return [];
 }
 
 function stationboardRequest(query, ws) {
