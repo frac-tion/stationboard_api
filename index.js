@@ -120,13 +120,23 @@ function stationboardRequest(query, ws) {
         var isTrainStation = false;
         var dateTime = new Date();
 
+             //operator: 'SASA S.p.A.',
+             //opCode: '004',
+              //console.log(body.servingLines.lines[0].mode.diva);
         if (body.servingLines.trainInfo !== undefined)
           isTrainStation = true;
 
         for (var i = 0; i < departureList.length; i++) {
-          list.push(parseStationboard(departureList[i]));
-          var trainNum = departureList[i].servingLine.trainNum;
+          if(departureList[i].operator.name === "SASA S.p.A.") {
+            isSASA
+            //Do stuff for sasa busses
+            //{departure: Time, destination: "destination", name: "Linea", number: "211"}
+          }
+          else
+            list.push(parseStationboard(departureList[i]));
         }
+
+        //do only for trains
         log.debug("Stationboard List:", JSON.stringify(list));
         if (isTrainStation) {
           realtime(query, dateTime.toString(), function(delayList) {
