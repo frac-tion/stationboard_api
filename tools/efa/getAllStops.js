@@ -27,7 +27,7 @@ function getAllStops(lang) {
           res[lang] = {};
           res[lang].name = el.desc;
           res[lang].city = el.locality;
-          res.coords = el.coords;
+          res.coords = parseEfaCoords(el.coords);
           //res.id = el.id;
           list[el.id] = res;
         });
@@ -43,6 +43,10 @@ function getAllStops(lang) {
     else
       console.error("HTTP error:", err);
   });
+}
+function parseEfaCoords(coords) {
+  coords = coords.split(",");
+  return {latitude: (coords[1]/1000000), longitude: (coords[0] / 1000000)}
 }
 
 /*
