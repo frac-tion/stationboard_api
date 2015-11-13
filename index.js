@@ -130,7 +130,6 @@ function stationboardRequest(query, ws) {
 
         //Should check in the passlist if there is a sasa bus
         for (var i = 0; i < departureList.length; i++) {
-          console.log(departureList[i].operator.name);
           if(departureList[i].operator.name === "SASA S.p.A.") {
             isSASA = true;
           }
@@ -193,7 +192,8 @@ function parseStationboard(el) {
   /*2013-10-21T13:28:06.419Z*/
   res.departure = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").valueOf();
   //res.countdown = el.countdown;
-  res.destination = el.servingLine.direction;
+  //res.destination = el.servingLine.direction;
+  res.destination = busstopList[el.servingLine.destID].it.name + ", " + busstopList[el.servingLine.destID].it.city;
 
   //res.realtime = el.servingLine.realtime;
   res.name = el.servingLine.name;
