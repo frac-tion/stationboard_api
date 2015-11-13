@@ -16,8 +16,28 @@ var logLevel = 'error';
 
 var Log = require('log');
 var request = require('request');
+var async = require("async");
+var fs = require("fs");
+var moment = require("moment");
+var busstopFile = fs.openSync("./data/allStopsWithSASA.json", "r");
+var busstopList = JSON.parse(fs.readFileSync(busstopFile));
+fs.closeSync(busstopFile);
 var STATIONBOARD_QUERY = "http://stationboard.opensasa.info/?type=json&ORT_NR=";
 var log = new Log(logLevel);
+
+function realtime(idList, finalCallback) {
+  log.debug("Async sasa request started");
+  var res = [];
+  async.each(idList, function(id, callback) {
+    getDep(id, function (data){
+      res = res.concat(data);
+      callback();
+    });
+  },
+  function(err){
+    finalCallback(res);
+  });
+}
 
 function getDep(id, callback) {
   request({url: STATIONBOARD_QUERY + id,
@@ -33,8 +53,20 @@ function getDep(id, callback) {
       try {
         var res = [];
         body.rides.forEach(function (ride) { 
-          var time = (new Date((new Date).toISOString().split("T")[0] + "T" + ride.departure)).getTime();
-          res.push({departure: time, destination: ride.last_station, number: ride.lidname , delay: ((ride.delay_sec/60) + ride.delay_min), color: ride.hexcode});
+          try {
+          var time = moment()
+                    .hours(ride.departure.split(":")[0])
+                    .minute(ride.departure.split(":")[1])
+                    .seconds(0)
+                    .valueOf();
+          res.push({departure: time,
+                    destination: ride.last_station,
+                    number: ride.lidname,
+                    delay: ((ride.delay_sec/60) + ride.delay_min),
+                    color: ride.hexcode});
+          } catch (exc) {
+            log.debug("Ride has not all necessare felds:", exc);
+          }
         });
 
       } catch (exc) {
@@ -46,9 +78,11 @@ function getDep(id, callback) {
       log.error("HTTP error:", err);
       res = [];
     }
+
     if (callback)
       callback(res);
   });
 }
 
-module.exports = getDep;
+
+module.exports = realtime;
