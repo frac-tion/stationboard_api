@@ -23,12 +23,13 @@ var STATIONBOARD_NEXT_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_R
 var Log = require('log');
 var request = require('request');
 var moment = require('moment');
-var sortBy = require("sort-array");
 var sortzzy = require('sortzzy')
+var async = require("async");
 var fs = require("fs");
 var WebSocketServer = require('ws').Server;
 
-var realtime = require('./realtime');
+var realtimeTI = require('./realtime');
+var realtimeSASA = require('./realtimeSASA');
 
 var log = new Log(logLevel);
 var wss = new WebSocketServer({ port: port });
@@ -102,6 +103,7 @@ function findSuggests(query) {
 
 function stationboardRequest(query, ws) {
   var list = [];
+  var asyncTasks = [];
   request({url: STATIONBOARD_QUERY + query,
     json: true,
     gzip: true,
@@ -118,47 +120,61 @@ function stationboardRequest(query, ws) {
 
         var stationName = body.dm.points.point.object;
         var isTrainStation = false;
-        var dateTime = new Date();
+        var isSASA = false;
 
-             //operator: 'SASA S.p.A.',
-             //opCode: '004',
-              //console.log(body.servingLines.lines[0].mode.diva);
+        //operator: 'SASA S.p.A.',
+        //opCode: '004',
+        //console.log(body.servingLines.lines[0].mode.diva);
         if (body.servingLines.trainInfo !== undefined)
           isTrainStation = true;
 
+        //Should check in the passlist if there is a sasa bus
         for (var i = 0; i < departureList.length; i++) {
+          console.log(departureList[i].operator.name);
           if(departureList[i].operator.name === "SASA S.p.A.") {
-            isSASA
-            //Do stuff for sasa busses
-            //{departure: Time, destination: "destination", name: "Linea", number: "211"}
+            isSASA = true;
           }
           else
             list.push(parseStationboard(departureList[i]));
         }
 
-        //do only for trains
-        log.debug("Stationboard List:", JSON.stringify(list));
-        if (isTrainStation) {
-          realtime(query, dateTime.toString(), function(delayList) {
-            list.forEach(function(el) {
-              if (delayList[el.number] !== undefined) {
-                el.delay = delayList[el.number].delay;
-                delete delayList[el.number];
-              }
+        //add Task if there is a SASA bus
+        if (isSASA) {
+          asyncTasks.push(function(callback){
+            realtimeSASA(busstopList[query].sasa, function (data) {
+              list = list.concat(data);
+              callback();
             });
-            for (var el in delayList)
-              list.unshift(delayList[el]);
-
-            sortBy(list, "departure");
-            log.debug(list);
-            if (ws)
-              ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
           });
         }
-        else {
+        //add Task if it is train station
+        if (isTrainStation) {
+          asyncTasks.push(function(callback){
+            realtimeTI(query, (new Date()).toString(), function(delayList) {
+              list.forEach(function(el, i) {
+                //have also to add trains not listed by the efa api
+                if (delayList[el.number] !== undefined) {
+                  list[i] = delayList[el.number]
+                }
+              });
+              callback();
+            });
+          });
+        }
+
+        //asyncTasks.push(function(callback){
+        //Call stuff
+        //  callback();
+        //});
+
+        // Execute all async tasks in the asyncTasks array
+        async.parallel(asyncTasks, function(){
+          list.sort(function(a, b) {
+            return (a.departure > b.departure) ? 1 : -1;
+          });
           if (ws)
             ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
-        }
+        });
       } catch (exc) {
         log.error("JSON parse error:", exc);
       }
