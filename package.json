@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/frac-tion/stationboard_api#readme",
   "dependencies": {
+    "async": "^1.5.0",
     "log": "^1.4.0",
     "moment": "^2.10.6",
     "request": "^2.65.0",
