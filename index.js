@@ -149,12 +149,17 @@ function stationboardRequest(query, ws) {
         //add Task if it is train station
         if (isTrainStation) {
           asyncTasks.push(function(callback){
-            realtimeTI(query, (new Date()).toString(), function(delayList) {
-              list.forEach(function(el, i) {
-                //have also to add trains not listed by the efa api
-                if (delayList[el.number] !== undefined) {
-                  list[i] = delayList[el.number]
-                }
+            realtimeTI(query, (new Date()).toString(), function(trainList) {
+              list = list.concat(trainList);
+              trainList.forEach(function (train) {
+                list.every(function (bus, index) {
+                  if (parseInt(bus.number) === parseInt(train.number) && 
+                      parseInt(bus.departure) === parseInt(train.departure)) {
+                      list.splice(index, 1);
+                      return false;
+                  }
+                  return true;
+                });
               });
               callback();
             });

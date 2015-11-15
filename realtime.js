@@ -63,63 +63,18 @@ var lookup = { '66000210': 'S02216',
 
 var Log = require('log');
 var request = require('request');
+var async = require('async');
 
 var log = new Log(logLevel);
 
 
 //gets departures of a train station from a SII id and uses the lookup table to get the trenitalia station id
 //callback: depature delays of all trains
-function realtimeTrenitalia(stationId, dateTime, callback) {
-  console.log(stationId, dateTime);
+function realtimeTrenitalia(stationId, dateTime, finalCallback) {
   if (lookup[stationId] != undefined) {
-    stationDepartures(lookup[stationId] + "/" + dateTime);
-    function stationDepartures(query) {
-      log.debug(STATION_DEPARTURES_API + query);
-      request({url: STATION_DEPARTURES_API + query,
-        json: true,
-        gzip: true,
-        headers: {
-          'Connection': 'keep-alive',
-          'Accept-Encoding': 'gzip, deflate'
-        }
-      },
-      function(err, res, body) {
-        if(!err) {
-          if (res.statusCode === 200) {
-            //log.debug(body);
-            trainDelay(body, callback);
-            //trainDelays(el.codOrigine + "/" + el.numeroTreno);
-            //if(callback)
-            //  callback(parseStation(body));
-          }
-          else
-            log.error("StatuCode: " + res.statusCode);
-        }
-        else
-          log.error(err);
-      });
-    }
-  }
-  else
-    callback({});
-}
-
-function parseTrain(el) {
-  var res = {};
-    log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
-    res = {};
-    res.number = el.numeroTreno;
-    res.destination = el.destinazione;
-    //res.departure = (new Date(el.orarioPartenza)).toJSON();
-    res.departure = (new Date(el.orarioPartenza)).getTime();
-  return res;
-}
-
-function trainDelay(list, callback) {
-  var resultList = {};
-  var count = 0;
-  list.forEach(function (el) {
-    request({url: REALTIME_TRAIN_URL + el.codOrigine + "/" + el.numeroTreno,
+    var query = STATION_DEPARTURES_API + lookup[stationId] + "/" + dateTime;
+    log.debug(query);
+    request({url: query,
       json: true,
       gzip: true,
       headers: {
@@ -127,17 +82,70 @@ function trainDelay(list, callback) {
         'Accept-Encoding': 'gzip, deflate'
       }
     },
-    function(err, res, trainDetails) {
+    function(err, res, stationDep) {
       if(!err) {
-        count++;
-        resultList[trainDetails.numeroTreno] = parseTrain(el);
-        resultList[trainDetails.numeroTreno].delay = trainDetails.ritardo;
-        if (count == list.length)
-          callback(resultList);
+        if (res.statusCode === 200) {
+          //requestTrainDetails(stationDep, callback);
+          var depList = [];
+          async.each(stationDep, function(train, callback) {
+            requestTrainDetails(train, function (list){
+              depList = depList.concat(list);
+              callback();
+            });
+          },
+          function(err) {
+            if (err)
+              finalCallback([]);
+            else
+              finalCallback(depList);
+          });
+
+        }
+        else
+          log.error("StatuCode: " + res.statusCode);
       }
+      else
+        log.error(err);
     });
-  })
+  }
+  else
+    callback({});
 }
 
+function parseTrainDetails(el) {
+  var res = {};
+  log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
+  res.number = el.numeroTreno;
+  res.destination = el.destinazione;
+  res.departure = (new Date(el.orarioPartenza)).getTime();
+  return res;
+}
+
+function requestTrainDetails(train, callback) {
+  var query = REALTIME_TRAIN_URL + train.codOrigine + "/" + train.numeroTreno;
+  request({url: query,
+    json: true,
+    gzip: true,
+    headers: {
+      'Connection': 'keep-alive',
+      'Accept-Encoding': 'gzip, deflate'
+    }
+  },
+  function(err, res, trainDetails) {
+    if(!err) {
+      var details = parseTrainDetails(train);
+      details.destination = findId(trainDetails.idDestinazione);
+      details.delay = trainDetails.ritardo;
+      callback(details);
+    }
+  });
+}
+
+function findId(id) {
+  for (var efaId in lookup) {
+    if (lookup[efaId] == id)
+      return efaId;
+  }
+}
 
 module.exports = realtimeTrenitalia;
