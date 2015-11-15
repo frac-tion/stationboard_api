@@ -198,7 +198,8 @@ function parseStationboard(el) {
   res.departure = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").valueOf();
   //res.countdown = el.countdown;
   //res.destination = el.servingLine.direction;
-  res.destination = busstopList[el.servingLine.destID].it.name + ", " + busstopList[el.servingLine.destID].it.city;
+  //res.destination = busstopList[el.servingLine.destID].it.name + ", " + busstopList[el.servingLine.destID].it.city;
+  res.destination = el.servingLine.destID;
 
   //res.realtime = el.servingLine.realtime;
   res.name = el.servingLine.name;

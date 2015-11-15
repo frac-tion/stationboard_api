@@ -1,5 +1,5 @@
 //gets in input a SASA busstop id and returns the departures in this format [{departure: Time, destination: "destination", name: "Linea", number: "211", delay: 0}]
-var logLevel = 'error';
+var logLevel = 'debug';
 
 /*
  * Log level:
@@ -54,16 +54,16 @@ function getDep(id, callback) {
         var res = [];
         body.rides.forEach(function (ride) { 
           try {
-          var time = moment()
-                    .hours(ride.departure.split(":")[0])
-                    .minute(ride.departure.split(":")[1])
-                    .seconds(0)
-                    .valueOf();
-          res.push({departure: time,
-                    destination: ride.last_station,
-                    number: ride.lidname,
-                    delay: ((ride.delay_sec/60) + ride.delay_min),
-                    color: ride.hexcode});
+            var time = moment()
+              .hours(ride.departure.split(":")[0])
+              .minute(ride.departure.split(":")[1])
+              .seconds(0)
+              .valueOf();
+            res.push({departure: time,
+              destination: findId(ride.passlist[ride.passlist.length - 1].ORT_NR),
+              number: ride.lidname,
+              delay: ((ride.delay_sec/60) + ride.delay_min),
+              color: ride.hexcode});
           } catch (exc) {
             log.debug("Ride has not all necessare felds:", exc);
           }
@@ -84,5 +84,24 @@ function getDep(id, callback) {
   });
 }
 
+
+function findId(id) {
+  var result;
+  //should break loop when result is defined
+  for (var efaId in busstopList) {
+    if (busstopList[efaId].sasa !== undefined) {
+    busstopList[efaId].sasa.every(function (sasaId) {
+      if (parseInt(id) === parseInt(sasaId)) {
+        console.log("Found Match");
+        result = efaId;
+        return false;
+      }
+      return true;
+    });
+    //return efaId;
+    }
+  }
+  return result;
+}
 
 module.exports = realtime;
