@@ -70,6 +70,7 @@ var log = new Log(logLevel);
 //gets departures of a train station from a SII id and uses the lookup table to get the trenitalia station id
 //callback: depature delays of all trains
 function realtimeTrenitalia(stationId, dateTime, callback) {
+  console.log(stationId, dateTime);
   if (lookup[stationId] != undefined) {
     stationDepartures(lookup[stationId] + "/" + dateTime);
     function stationDepartures(query) {
@@ -103,20 +104,19 @@ function realtimeTrenitalia(stationId, dateTime, callback) {
     callback({});
 }
 
-function parseStation(dep) {
+function parseTrain(el) {
   var res = {};
-  dep.forEach(function (el) {
     log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
-    res[el.numeroTreno] = {};
-    res[el.numeroTreno].delay = el.ritardo;
-    res[el.numeroTreno].number = el.numeroTreno;
-    res[el.numeroTreno].destination = el.destinazione;
-    res[el.numeroTreno].departure = (new Date(el.orarioPartenza)).toJSON();
-  });
+    res = {};
+    res.number = el.numeroTreno;
+    res.destination = el.destinazione;
+    res.departure = (new Date(el.orarioPartenza)).toJSON();
+  //res.departure = (new Date(train.orarioPartenza)).getTime();
   return res;
 }
 
 function trainDelay(list, callback) {
+  console.log("dfsddddddddddddddddddddddd");
   var resultList = {};
   var count = 0;
   list.forEach(function (el) {
@@ -128,26 +128,16 @@ function trainDelay(list, callback) {
         'Accept-Encoding': 'gzip, deflate'
       }
     },
-    function(err, res, body) {
+    function(err, res, trainDetails) {
       if(!err) {
-        //log.debug(parseTrain(body));
         count++;
-        resultList[body.numeroTreno] = parseTrain(body);
+        resultList[trainDetails.numeroTreno] = parseTrain(el);
+        resultList[trainDetails.numeroTreno].delay = trainDetails.ritardo;
         if (count == list.length)
           callback(resultList);
       }
     });
   })
-}
-
-function parseTrain(train) {
-  var res = {};
-  log.debug(train.numeroTreno + " has a delay of " + train.ritardo + " min");
-  res.delay = train.ritardo;
-  res.number = train.numeroTreno;
-  res.destination = train.destinazione;
-  res.departure = (new Date(train.orarioPartenza)).getTime();
-  return res;
 }
 
 
