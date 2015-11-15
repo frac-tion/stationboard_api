@@ -110,13 +110,12 @@ function parseTrain(el) {
     res = {};
     res.number = el.numeroTreno;
     res.destination = el.destinazione;
-    res.departure = (new Date(el.orarioPartenza)).toJSON();
-  //res.departure = (new Date(train.orarioPartenza)).getTime();
+    //res.departure = (new Date(el.orarioPartenza)).toJSON();
+    res.departure = (new Date(el.orarioPartenza)).getTime();
   return res;
 }
 
 function trainDelay(list, callback) {
-  console.log("dfsddddddddddddddddddddddd");
   var resultList = {};
   var count = 0;
   list.forEach(function (el) {
