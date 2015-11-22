@@ -5,7 +5,7 @@ var logLevel = 'debug';
 //api calls
 //62.101.1.162 is efa.mobilitaetsagentur.bz.it
 var STATIONBOARD_QUERY = 'http://62.101.1.162/apb/XSLT_DM_REQUEST?language=it&deleteAssignedStops_dm=1&trITMOTvalue100=7&useProxFootSearch=0&itdLPxx_today=10&mode=direct&lsShowTrainsExplicit=0&type_dm=any&includedMeans=checkbox&inclMOT_ZUG=1&inclMOT_BUS=1&inclMOT_8=1&inclMOT_9=1&locationServerActive=1&convertStopsPTKernel2LocationServer=1&convertAddressesITKernel2LocationServer=1&convertCoord2LocationServer=1&convertCrossingsITKernel2LocationServer=1&convertPOIsITKernel2LocationServer=1&stateless=1&itOptionsActive=1&ptOptionsActive=1&itdLPxx_depOnly=1&maxAssignedStops=1&hideBannerInfo=1&execInst=normal&limit=15&useAllStops=1&outputFormat=JSON&name_dm=';
-var STATIONBOARD_NEXT_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_REQUEST?language=it&outputFormat=JSONrequestID=1&command=dmNext&itdLPxx_version=text&sessionID=' //I dont get the sessionID from the first call
+//var STATIONBOARD_NEXT_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_REQUEST?language=it&outputFormat=JSONrequestID=1&command=dmNext&itdLPxx_version=text&sessionID=' //I dont get the sessionID from the first call
 
 /*
  * Log level:
@@ -23,7 +23,7 @@ var STATIONBOARD_NEXT_QUERY = 'http://efa.mobilitaetsagentur.bz.it/apb/XSLT_DM_R
 var Log = require('log');
 var request = require('request');
 var moment = require('moment');
-var sortzzy = require('sortzzy')
+var sortzzy = require('sortzzy');
 var async = require("async");
 var fs = require("fs");
 var WebSocketServer = require('ws').Server;
@@ -51,7 +51,7 @@ wss.on('connection', function connection(ws) {
         if (message.call == "busstopRequest")
           busstopRequest(message.query, ws);
         else if (message.call == "stationboardRequest")
-          stationboardRequest(message.query, ws);
+          stationboardRequest(message.query, message.time, ws);
         else
           log.info("Unknown call");
       }
@@ -65,7 +65,7 @@ wss.on('connection', function connection(ws) {
 
 function busstopRequest(query, ws) {
   if (ws)
-    ws.send(JSON.stringify({res: findSuggests(query), cb: "busstopResponse"}));
+    ws.send(JSON.stringify({res: (query === "*")? busstopList : findSuggests(query), cb: "busstopResponse", id:query}));
 }
 /*'66008513': 
   { de: { name: 'Martina', city: 'Tschlin' },
@@ -101,10 +101,15 @@ function findSuggests(query) {
     return [];
 }
 
-function stationboardRequest(query, ws) {
+function stationboardRequest(query, time, ws) {
   var list = [];
   var asyncTasks = [];
-  request({url: STATIONBOARD_QUERY + query,
+  var timeQuery = "";
+  if (time) {
+    //itdDateDayMonthYear=10.08.2015&itdTime=1125
+    timeQuery = "&itdDateDayMonthYear=" + moment(time).format("DD:MM:YYYY") + "&itdTime=" + moment(time).format("HHmm");
+  }
+  request({url: STATIONBOARD_QUERY + query + timeQuery,
     json: true,
     gzip: true,
     headers: {
@@ -149,7 +154,7 @@ function stationboardRequest(query, ws) {
         //add Task if it is train station
         if (isTrainStation) {
           asyncTasks.push(function(callback){
-            realtimeTI(query, (new Date()).toString(), function(trainList) {
+            realtimeTI(query, time || (new Date()).toString(), function(trainList) {
               list = list.concat(trainList);
               trainList.forEach(function (train) {
                 list.every(function (bus, index) {
@@ -177,7 +182,7 @@ function stationboardRequest(query, ws) {
             return (a.departure > b.departure) ? 1 : -1;
           });
           if (ws)
-            ws.send(JSON.stringify({res: list, cb: "stationboardResponse"}));
+            ws.send(JSON.stringify({res: list, cb: "stationboardResponse", id: query}));
         });
       } catch (exc) {
         log.error("JSON parse error:", exc);

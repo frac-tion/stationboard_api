@@ -92,7 +92,6 @@ function findId(id) {
     if (busstopList[efaId].sasa !== undefined) {
     busstopList[efaId].sasa.every(function (sasaId) {
       if (parseInt(id) === parseInt(sasaId)) {
-        console.log("Found Match");
         result = efaId;
         return false;
       }
