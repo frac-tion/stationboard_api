@@ -1,6 +1,3 @@
-//config
-var port = 8000;
-var logLevel = 'debug';
 
 //api calls
 //62.101.1.162 is efa.mobilitaetsagentur.bz.it
@@ -31,15 +28,19 @@ var WebSocketServer = require('ws').Server;
 var realtimeTI = require('./realtime');
 var realtimeSASA = require('./realtimeSASA');
 
-var log = new Log(logLevel);
-var wss = new WebSocketServer({ port: port });
+var configFile = fs.openSync("./config.json", "r");
+var config = JSON.parse(fs.readFileSync(configFile));
+fs.closeSync(configFile);
+
+var log = new Log(config.logLevel);
+var wss = new WebSocketServer({ port: config.port });
 
 var busstopFile = fs.openSync("./data/allStopsWithSASA.json", "r");
 var busstopList = JSON.parse(fs.readFileSync(busstopFile));
 fs.closeSync(busstopFile);
 
 
-log.info("WebSocket listening on " + port);
+log.info("WebSocket listening on " + config.port);
 
 wss.on('connection', function connection(ws) {
   log.info("New client connected");
