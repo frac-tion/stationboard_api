@@ -68,12 +68,6 @@ function busstopRequest(query, ws) {
   if (ws)
     ws.send(JSON.stringify({res: (query === "*")? busstopList : findSuggests(query), cb: "busstopResponse", id:query}));
 }
-/*'66008513': 
-  { de: { name: 'Martina', city: 'Tschlin' },
-  coords: { latitude: 46.88575227405, longitude: 10.46425345025 },
-  it: { name: 'Martina', city: 'Tschlin' } } }
-  */
-
 
 //has to return an array of stops ({name: "name", city: "city", id: "id as number"})
 function findSuggests(query) {
@@ -106,118 +100,94 @@ function stationboardRequest(query, time, ws) {
   var list = [];
   var asyncTasks = [];
   var timeQuery = "";
+  var isTrainStation = false; // have to save the trainstation into the main bustoplist
+
+  //if (body.servingLines.trainInfo !== undefined)
+  //isTrainStation = true;
   if (time) {
-    //itdDateDayMonthYear=10.08.2015&itdTime=1125
     timeQuery = "&itdDateDayMonthYear=" + moment(time).format("DD:MM:YYYY") + "&itdTime=" + moment(time).format("HHmm");
   }
-  request({url: STATIONBOARD_QUERY + query + timeQuery,
-    json: true,
-    gzip: true,
-    headers: {
-      'Connection': 'keep-alive',
-      'Accept-Encoding': 'gzip, deflate'
-    }
-  },
-  function(err, res, body) {
-    if(!err) {
-      try {
-        //var departureList = JSON.parse(body).departureList;
-        var departureList = body.departureList;
 
-        var stationName = body.dm.points.point.object;
-        var isTrainStation = false;
-        var isSASA = false;
+  //add Task if there is a SASA bus
+  if (busstopList[query].sasa !== undefined) {
+    asyncTasks.push(function(callback){
+      realtimeSASA(busstopList[query].sasa, function (data) {
+        list = list.concat(data);
+        callback();
+      });
+    });
+  }
 
-        //operator: 'SASA S.p.A.',
-        //opCode: '004',
-        //console.log(body.servingLines.lines[0].mode.diva);
-        if (body.servingLines.trainInfo !== undefined)
-          isTrainStation = true;
-
-        //Should check in the passlist if there is a sasa bus
-        for (var i = 0; i < departureList.length; i++) {
-          if(departureList[i].operator.name === "SASA S.p.A.") {
-            isSASA = true;
-          }
-          else
-            list.push(parseStationboard(departureList[i]));
-        }
-
-        //add Task if there is a SASA bus
-        if (isSASA) {
-          asyncTasks.push(function(callback){
-            realtimeSASA(busstopList[query].sasa, function (data) {
-              list = list.concat(data);
-              callback();
-            });
+  //add Task if it is train station
+  if (isTrainStation) {
+    asyncTasks.push(function(callback){
+      realtimeTI(query, time || (new Date()).toString(), function(trainList) {
+        list = list.concat(trainList);
+        trainList.forEach(function (train) {
+          list.every(function (bus, index) {
+            if (parseInt(bus.number) === parseInt(train.number) && 
+                parseInt(bus.departure) === parseInt(train.departure)) {
+              list.splice(index, 1);
+              return false;
+            }
+            return true;
           });
-        }
-        //add Task if it is train station
-        if (isTrainStation) {
-          asyncTasks.push(function(callback){
-            realtimeTI(query, time || (new Date()).toString(), function(trainList) {
-              list = list.concat(trainList);
-              trainList.forEach(function (train) {
-                list.every(function (bus, index) {
-                  if (parseInt(bus.number) === parseInt(train.number) && 
-                      parseInt(bus.departure) === parseInt(train.departure)) {
-                      list.splice(index, 1);
-                      return false;
-                  }
-                  return true;
-                });
-              });
-              callback();
-            });
-          });
-        }
-
-        //asyncTasks.push(function(callback){
-        //Call stuff
-        //  callback();
-        //});
-
-        // Execute all async tasks in the asyncTasks array
-        async.parallel(asyncTasks, function(){
-          list.sort(function(a, b) {
-            return (a.departure > b.departure) ? 1 : -1;
-          });
-          if (ws)
-            ws.send(JSON.stringify({res: list, cb: "stationboardResponse", id: query}));
         });
-      } catch (exc) {
-        log.error("JSON parse error:", exc);
+        callback();
+      });
+    });
+  }
+
+
+  asyncTasks.push(function(callback) {
+    request({url: STATIONBOARD_QUERY + query + timeQuery,
+      json: true,
+      gzip: true,
+      headers: {
+        'Connection': 'keep-alive',
+        'Accept-Encoding': 'gzip, deflate'
       }
-    }
-    else
-      log.error("HTTP error:", err);
+    },
+    function(err, res, body) {
+      if(!err) {
+        var departureList = body.departureList;
+        var data = [];
+
+        for (var i = 0; i < departureList.length; i++) {
+          //don't save sasa buses
+          if(departureList[i].operator.name !== "SASA S.p.A.")
+            data.push(parseStationboard(departureList[i]));
+        }
+      }
+      else
+        log.error("HTTP error:", err);
+      list = list.concat(data);
+      callback();
+    });
+  });
+
+  // Execute all async tasks in the asyncTasks array
+  async.parallel(asyncTasks, function(){
+    list.sort(function(a, b) {
+      return (a.departure > b.departure) ? 1 : -1;
+    });
+    if (ws)
+      ws.send(JSON.stringify({res: list.splice(0, 6), cb: "stationboardResponse", id: query}));
   });
 }
 
 function parseStationboard(el) {
   var res = {};
-  /*year, month, day, hour,	minute*/
-  var d = el.dateTime;
-  //	log.debug(el.servingLine.trainNum);
-  //	log.debug(addRealtime());
-  /*2013-10-21T13:28:06.419Z*/
-  res.departure = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").valueOf();
-  //res.countdown = el.countdown;
-  //res.destination = el.servingLine.direction;
-  //res.destination = busstopList[el.servingLine.destID].it.name + ", " + busstopList[el.servingLine.destID].it.city;
-  res.destination = el.servingLine.destID;
-
-  //res.realtime = el.servingLine.realtime;
-  res.name = el.servingLine.name;
+  var d = el.dateTime; //year, month, day, hour,	minute
   var trainNum = el.servingLine.trainNum;
+
+  res.departure = moment(d.year + "-" + d.month + "-" + d.day + "," + d.hour + ":" + d.minute, "YYYY-MM-DD,HH:mm").valueOf();
+  res.destination = el.servingLine.destID;
+  res.name = el.servingLine.name;
+
   if (trainNum !== undefined)
     res.number = trainNum;
   else
     res.number = el.servingLine.number;
-  //res.symbol = el.servingLine.symbol;
   return res;
-}
-
-function addRealtime() {
-  return 0;
 }
