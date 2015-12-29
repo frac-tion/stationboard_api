@@ -62,7 +62,7 @@ function getDep(id, callback) {
             res.push({departure: time,
               destination: findId(ride.passlist[ride.passlist.length - 1].ORT_NR),
               number: ride.lidname,
-              delay: ((ride.delay_sec/60) + ride.delay_min),
+              delay: Math.round((ride.delay_sec/60) + ride.delay_min),
               color: ride.hexcode});
           } catch (exc) {
             log.debug("Ride has not all necessare felds:", exc);
