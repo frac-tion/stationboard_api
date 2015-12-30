@@ -70,7 +70,8 @@ var log = new Log(logLevel);
 
 //gets departures of a train station from a SII id and uses the lookup table to get the trenitalia station id
 //callback: depature delays of all trains
-function realtimeTrenitalia(stationId, dateTime, finalCallback) {
+function realtimeTrenitalia(stationId, time, finalCallback) {
+  var dateTime = time.toString();
   if (lookup[stationId] != undefined) {
     var query = STATION_DEPARTURES_API + lookup[stationId] + "/" + dateTime;
     log.debug(query);

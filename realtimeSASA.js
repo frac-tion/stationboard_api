@@ -30,11 +30,13 @@ try {
 var STATIONBOARD_QUERY = "http://stationboard.opensasa.info/?type=json&ORT_NR=";
 var log = new Log(logLevel);
 
-function realtime(idList, finalCallback) {
+function realtime(idList, time, finalCallback) {
+  if (time == undefined)
+    time = 0;
   log.debug("Async sasa request started");
   var res = [];
   async.each(idList, function(id, callback) {
-    getDep(id, function (data){
+    getDep(id, time, function (data){
       res = res.concat(data);
       callback();
     });
@@ -44,7 +46,7 @@ function realtime(idList, finalCallback) {
   });
 }
 
-function getDep(id, callback) {
+function getDep(id, time, callback) {
   request({url: STATIONBOARD_QUERY + id,
           json: true,
           gzip: true,
@@ -59,16 +61,20 @@ function getDep(id, callback) {
         var res = [];
         body.rides.forEach(function (ride) { 
           try {
-            var time = moment()
+            var delay =  Math.round((ride.delay_sec/60) + ride.delay_min);
+            var depTime = moment()
             .hours(ride.departure.split(":")[0])
             .minute(ride.departure.split(":")[1])
             .seconds(0)
+            .milliseconds(0)
             .valueOf();
-            res.push({departure: time,
-                     destination: findId(ride.passlist[ride.passlist.length - 1].ORT_NR),
-                     number: ride.lidname,
-                     delay: Math.round((ride.delay_sec/60) + ride.delay_min),
-                     color: ride.hexcode});
+            if ((depTime + (delay * 60000)) > time) {
+              res.push({departure: depTime,
+                       destination: findId(ride.passlist[ride.passlist.length - 1].ORT_NR),
+                       number: ride.lidname,
+                       delay: delay,
+                       color: ride.hexcode});
+            }
           } catch (exc) {
             log.debug("Ride has not all necessare felds:", exc);
           }

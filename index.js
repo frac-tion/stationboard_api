@@ -112,18 +112,29 @@ function stationboardRequest(query, time, ws) {
   var asyncTasks = [];
   var timeQuery = "";
   var isTrainStation = false; // have to save the trainstation into the main bustoplist
-
-  //if (body.servingLines.trainInfo !== undefined)
-  //isTrainStation = true;
-  if (time) {
-    timeQuery = "&itdDateDayMonthYear=" + moment(time).format("DD:MM:YYYY") + "&itdTime=" + moment(time).format("HHmm");
+  if (!time) {
+    time = (new Date()).valueOf();//  + 8 * 60 * 1000;
   }
+  timeQuery = "&itdDateDayMonthYear=" + moment(time).format("DD:MM:YYYY") + "&itdTime=" + moment(time).format("HHmm");
 
   //add Task if there is a SASA bus
   if (busstopList[query].sasa !== undefined) {
     asyncTasks.push(function(callback){
-      realtimeSASA(busstopList[query].sasa, function (data) {
+      realtimeSASA(busstopList[query].sasa, time, function (data) {
         list = list.concat(data);
+        //console.log("Full list", list);
+        data.forEach(function (sasaBus) {
+          list.every(function (bus, index) {
+            if (parseInt(bus.number) === parseInt(sasaBus.number) && 
+                parseInt(bus.departure) === parseInt(sasaBus.departure) &&
+                bus.delay === undefined) {
+                  list.splice(index, 1);
+                  return false;
+                }
+                return true;
+          });
+        });
+
         callback();
       });
     });
@@ -132,12 +143,13 @@ function stationboardRequest(query, time, ws) {
   //add Task if it is train station
   if (isTrainStation) {
     asyncTasks.push(function(callback){
-      realtimeTI(query, time || (new Date()).toString(), function(trainList) {
+      realtimeTI(query, time, function(trainList) {
         list = list.concat(trainList);
         trainList.forEach(function (train) {
           list.every(function (bus, index) {
             if (parseInt(bus.number) === parseInt(train.number) && 
-                parseInt(bus.departure) === parseInt(train.departure)) {
+                parseInt(bus.departure) === parseInt(train.departure) &&
+                bus.delay === undefined) {
                   list.splice(index, 1);
                   return false;
                 }
@@ -168,8 +180,8 @@ function stationboardRequest(query, time, ws) {
 
           for (var i = 0; i < departureList.length; i++) {
             //don't save sasa buses
-            if(departureList[i].operator.name !== "SASA S.p.A.")
-              data.push(parseStationboard(departureList[i]));
+            //if(departureList[i].operator.name !== "SASA S.p.A.")
+            data.push(parseStationboard(departureList[i]));
           }
           list = list.concat(data);
         } catch(e) {
@@ -188,8 +200,8 @@ function stationboardRequest(query, time, ws) {
       return (a.departure > b.departure) ? 1 : -1;
     });
     if (ws)
-      log.debug(list.splice(0, 6));
-    ws.send(JSON.stringify({res: list.splice(0, 6), cb: "stationboardResponse", id: query}));
+      log.debug(list);
+    ws.send(JSON.stringify({res: list, cb: "stationboardResponse", id: query}));
   });
 }
 
