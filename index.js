@@ -85,8 +85,8 @@ function findSuggests(query) {
 
     // Define the fields  
     var fields = [
-    {name: 'name', type: 'string', weight: 1, options: {ignoreCase: true}},
-    {name: 'city', type: 'string', weight: 1, options: {ignoreCase: true}},
+      {name: 'name', type: 'string', weight: 1, options: {ignoreCase: true}},
+      {name: 'city', type: 'string', weight: 1, options: {ignoreCase: true}},
     ]
 
     var result = sortzzy.sort(matching, model, fields, {dataOnly: true});
@@ -127,10 +127,10 @@ function stationboardRequest(query, time, ws) {
           list.every(function (bus, index) {
             if (parseInt(bus.number) === parseInt(train.number) && 
                 parseInt(bus.departure) === parseInt(train.departure)) {
-              list.splice(index, 1);
-              return false;
-            }
-            return true;
+                  list.splice(index, 1);
+                  return false;
+                }
+                return true;
           });
         });
         callback();
@@ -140,28 +140,33 @@ function stationboardRequest(query, time, ws) {
 
 
   asyncTasks.push(function(callback) {
+    log.debug(STATIONBOARD_QUERY + query + timeQuery);
     request({url: STATIONBOARD_QUERY + query + timeQuery,
-      json: true,
-      gzip: true,
-      headers: {
-        'Connection': 'keep-alive',
-        'Accept-Encoding': 'gzip, deflate'
-      }
+            json: true,
+            gzip: true,
+            headers: {
+              'Connection': 'keep-alive',
+              'Accept-Encoding': 'gzip, deflate'
+            }
     },
     function(err, res, body) {
       if(!err) {
-        var departureList = body.departureList;
-        var data = [];
+        try {
+          var departureList = body.departureList;
+          var data = [];
 
-        for (var i = 0; i < departureList.length; i++) {
-          //don't save sasa buses
-          if(departureList[i].operator.name !== "SASA S.p.A.")
-            data.push(parseStationboard(departureList[i]));
+          for (var i = 0; i < departureList.length; i++) {
+            //don't save sasa buses
+            if(departureList[i].operator.name !== "SASA S.p.A.")
+              data.push(parseStationboard(departureList[i]));
+          }
+          list = list.concat(data);
+        } catch(e) {
+          log.warning(e);
         }
       }
       else
         log.error("HTTP error:", err);
-      list = list.concat(data);
       callback();
     });
   });
@@ -172,7 +177,8 @@ function stationboardRequest(query, time, ws) {
       return (a.departure > b.departure) ? 1 : -1;
     });
     if (ws)
-      ws.send(JSON.stringify({res: list.splice(0, 6), cb: "stationboardResponse", id: query}));
+      log.debug(list.splice(0, 6));
+    ws.send(JSON.stringify({res: list.splice(0, 6), cb: "stationboardResponse", id: query}));
   });
 }
 
