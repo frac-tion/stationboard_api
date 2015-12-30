@@ -19,9 +19,14 @@ var request = require('request');
 var async = require("async");
 var fs = require("fs");
 var moment = require("moment");
-var busstopFile = fs.openSync("./data/allStopsWithSASA.json", "r");
-var busstopList = JSON.parse(fs.readFileSync(busstopFile));
-fs.closeSync(busstopFile);
+try {
+  var busstopFile = fs.openSync("./data/allStopsWithSASA.json", "r");
+  var busstopList = JSON.parse(fs.readFileSync(busstopFile));
+  fs.closeSync(busstopFile);
+} catch (e) {
+  var busstopFile = "./data/allStopsWithSASA.json";
+  var busstopList = JSON.parse(fs.readFileSync(busstopFile));
+}
 var STATIONBOARD_QUERY = "http://stationboard.opensasa.info/?type=json&ORT_NR=";
 var log = new Log(logLevel);
 
@@ -41,12 +46,12 @@ function realtime(idList, finalCallback) {
 
 function getDep(id, callback) {
   request({url: STATIONBOARD_QUERY + id,
-    json: true,
-    gzip: true,
-    headers: {
-      'Connection': 'keep-alive',
-      'Accept-Encoding': 'gzip, deflate'
-    }
+          json: true,
+          gzip: true,
+          headers: {
+            'Connection': 'keep-alive',
+            'Accept-Encoding': 'gzip, deflate'
+          }
   },
   function(err, res, body) {
     if(!err) {
@@ -55,15 +60,15 @@ function getDep(id, callback) {
         body.rides.forEach(function (ride) { 
           try {
             var time = moment()
-              .hours(ride.departure.split(":")[0])
-              .minute(ride.departure.split(":")[1])
-              .seconds(0)
-              .valueOf();
+            .hours(ride.departure.split(":")[0])
+            .minute(ride.departure.split(":")[1])
+            .seconds(0)
+            .valueOf();
             res.push({departure: time,
-              destination: findId(ride.passlist[ride.passlist.length - 1].ORT_NR),
-              number: ride.lidname,
-              delay: Math.round((ride.delay_sec/60) + ride.delay_min),
-              color: ride.hexcode});
+                     destination: findId(ride.passlist[ride.passlist.length - 1].ORT_NR),
+                     number: ride.lidname,
+                     delay: Math.round((ride.delay_sec/60) + ride.delay_min),
+                     color: ride.hexcode});
           } catch (exc) {
             log.debug("Ride has not all necessare felds:", exc);
           }
@@ -90,14 +95,14 @@ function findId(id) {
   //should break loop when result is defined
   for (var efaId in busstopList) {
     if (busstopList[efaId].sasa !== undefined) {
-    busstopList[efaId].sasa.every(function (sasaId) {
-      if (parseInt(id) === parseInt(sasaId)) {
-        result = efaId;
-        return false;
-      }
-      return true;
-    });
-    //return efaId;
+      busstopList[efaId].sasa.every(function (sasaId) {
+        if (parseInt(id) === parseInt(sasaId)) {
+          result = efaId;
+          return false;
+        }
+        return true;
+      });
+      //return efaId;
     }
   }
   return result;

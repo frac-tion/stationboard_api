@@ -28,16 +28,27 @@ var WebSocketServer = require('ws').Server;
 var realtimeTI = require('./realtime');
 var realtimeSASA = require('./realtimeSASA');
 
-var configFile = fs.openSync("./config.json", "r");
-var config = JSON.parse(fs.readFileSync(configFile));
-fs.closeSync(configFile);
+try {
+  var configFile = fs.openSync("./config.json", "r");
+  var config = JSON.parse(fs.readFileSync(configFile));
+  fs.closeSync(configFile);
+} catch (e) {
+  var configFile = "./config.json";
+  var config = JSON.parse(fs.readFileSync(configFile));
+}
 
 var log = new Log(config.logLevel);
 var wss = new WebSocketServer({ port: config.port });
 
-var busstopFile = fs.openSync("./data/allStopsWithSASA.json", "r");
-var busstopList = JSON.parse(fs.readFileSync(busstopFile));
-fs.closeSync(busstopFile);
+try {
+  var busstopFile = fs.openSync("./data/allStopsWithSASA.json", "r");
+  var busstopList = JSON.parse(fs.readFileSync(busstopFile));
+  fs.closeSync(busstopFile);
+}
+catch (e) {
+  var busstopFile = "./data/allStopsWithSASA.json";
+  var busstopList = JSON.parse(fs.readFileSync(busstopFile));
+}
 
 
 log.info("WebSocket listening on " + config.port);
