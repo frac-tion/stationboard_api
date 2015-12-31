@@ -61,92 +61,106 @@ var lookup = { '66000210': 'S02216',
  * 7 DEBUG messages to debug an application
  */
 
-var Log = require('log');
-var request = require('request');
-var async = require('async');
+  var Log = require('log');
+  var request = require('request');
+  var async = require('async');
 
-var log = new Log(logLevel);
+  var log = new Log(logLevel);
 
 
-//gets departures of a train station from a SII id and uses the lookup table to get the trenitalia station id
-//callback: depature delays of all trains
-function realtimeTrenitalia(stationId, time, finalCallback) {
-  var dateTime = time.toString();
-  if (lookup[stationId] != undefined) {
-    var query = STATION_DEPARTURES_API + lookup[stationId] + "/" + dateTime;
-    log.debug(query);
-    request({url: query,
-      json: true,
-      gzip: true,
-      headers: {
-        'Connection': 'keep-alive',
-        'Accept-Encoding': 'gzip, deflate'
-      }
-    },
-    function(err, res, stationDep) {
-      if(!err) {
-        if (res.statusCode === 200) {
-          //requestTrainDetails(stationDep, callback);
-          var depList = [];
-          async.each(stationDep, function(train, callback) {
-            requestTrainDetails(train, function (list){
-              depList = depList.concat(list);
-              callback();
+  //gets departures of a train station from a SII id and uses the lookup table to get the trenitalia station id
+  //callback: depature delays of all trains
+  function realtimeTrenitalia(stationId, time, finalCallback) {
+    var dateTime = (new Date(time)).toString();
+    if (lookup[stationId] != undefined) {
+      var query = STATION_DEPARTURES_API + lookup[stationId] + "/" + dateTime;
+      console.log(query);
+      log.debug(query);
+      request({url: query,
+              json: true,
+              gzip: true,
+              headers: {
+                'Connection': 'keep-alive',
+                'Accept-Encoding': 'gzip, deflate'
+              }
+      },
+      function(err, res, stationDep) {
+        if(!err) {
+          if (res.statusCode === 200) {
+            //requestTrainDetails(stationDep, callback);
+            var depList = [];
+            async.each(stationDep, function(train, callback) {
+              requestTrainDetails(train, function (list){
+                depList = depList.concat(list);
+                callback();
+              });
+            },
+            function(err) {
+              if (err)
+                finalCallback([]);
+              else
+                finalCallback(depList);
             });
-          },
-          function(err) {
-            if (err)
-              finalCallback([]);
-            else
-              finalCallback(depList);
-          });
 
+          }
+          else {
+            log.error("StatuCode: " + res.statusCode);
+            finalCallback([]);
+          }
         }
-        else
-          log.error("StatuCode: " + res.statusCode);
+        else {
+          log.error(err);
+          finalCallback([]);
+        }
+      });
+    }
+    else
+      finalCallback([]);
+  }
+
+  function parseTrainDetails(el) {
+    var res = {};
+    log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
+    res.number = el.numeroTreno;
+    res.destination = el.destinazione;
+    res.departure = (new Date(el.orarioPartenza)).getTime();
+    return res;
+  }
+
+  function requestTrainDetails(train, callback) {
+    var query = REALTIME_TRAIN_URL + train.codOrigine + "/" + train.numeroTreno;
+    request({url: query,
+            json: true,
+            gzip: true,
+            headers: {
+              'Connection': 'keep-alive',
+              'Accept-Encoding': 'gzip, deflate'
+            }
+    },
+    function(err, res, trainDetails) {
+      if(!err) {
+        var details = parseTrainDetails(train);
+        details.destination = findId(trainDetails.idDestinazione);
+        details.delay = trainDetails.ritardo;
+        callback(details);
       }
-      else
-        log.error(err);
     });
   }
-  else
-    callback({});
-}
 
-function parseTrainDetails(el) {
-  var res = {};
-  log.debug(el.numeroTreno + " has a delay of " + el.ritardo + " min");
-  res.number = el.numeroTreno;
-  res.destination = el.destinazione;
-  res.departure = (new Date(el.orarioPartenza)).getTime();
-  return res;
-}
-
-function requestTrainDetails(train, callback) {
-  var query = REALTIME_TRAIN_URL + train.codOrigine + "/" + train.numeroTreno;
-  request({url: query,
-    json: true,
-    gzip: true,
-    headers: {
-      'Connection': 'keep-alive',
-      'Accept-Encoding': 'gzip, deflate'
+  function findId(id) {
+    for (var efaId in lookup) {
+      if (lookup[efaId] == id)
+        return efaId;
     }
-  },
-  function(err, res, trainDetails) {
-    if(!err) {
-      var details = parseTrainDetails(train);
-      details.destination = findId(trainDetails.idDestinazione);
-      details.delay = trainDetails.ritardo;
-      callback(details);
-    }
-  });
-}
-
-function findId(id) {
-  for (var efaId in lookup) {
-    if (lookup[efaId] == id)
-      return efaId;
   }
-}
 
-module.exports = realtimeTrenitalia;
+  function isTrainStation(id) {
+    if (lookup[id] === undefined)
+      return false;
+    else
+      return true;
+  }
+
+  module.exports = {};
+  module.exports.query = realtimeTrenitalia;
+  module.exports.isTrainStation = isTrainStation;

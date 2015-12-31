@@ -111,7 +111,6 @@ function stationboardRequest(query, time, ws) {
   var list = [];
   var asyncTasks = [];
   var timeQuery = "";
-  var isTrainStation = false; // have to save the trainstation into the main bustoplist
   if (!time) {
     time = (new Date()).valueOf();//  + 8 * 60 * 1000;
   }
@@ -123,6 +122,7 @@ function stationboardRequest(query, time, ws) {
       realtimeSASA(busstopList[query].sasa, time, function (data) {
         list = list.concat(data);
         //console.log("Full list", list);
+        //move to finaleCallback when all calls are done same for trenitalia
         data.forEach(function (sasaBus) {
           list.every(function (bus, index) {
             if (parseInt(bus.number) === parseInt(sasaBus.number) && 
@@ -141,10 +141,12 @@ function stationboardRequest(query, time, ws) {
   }
 
   //add Task if it is train station
-  if (isTrainStation) {
+  if (realtimeTI.isTrainStation(query)) {
     asyncTasks.push(function(callback){
-      realtimeTI(query, time, function(trainList) {
+      realtimeTI.query(query, time, function(trainList) {
         list = list.concat(trainList);
+        //move to finaleCallback when all calls are done same for sasa 
+        console.log(trainList);
         trainList.forEach(function (train) {
           list.every(function (bus, index) {
             if (parseInt(bus.number) === parseInt(train.number) && 
@@ -199,9 +201,10 @@ function stationboardRequest(query, time, ws) {
     list.sort(function(a, b) {
       return (a.departure > b.departure) ? 1 : -1;
     });
+    //remove dupplicate stuff her
     if (ws)
-      log.debug(list);
-    ws.send(JSON.stringify({res: list, cb: "stationboardResponse", id: query}));
+      //log.debug(list);
+      ws.send(JSON.stringify({res: list.splice(0, 10), cb: "stationboardResponse", id: query}));
   });
 }
 
